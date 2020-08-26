@@ -1,0 +1,11 @@
+{
+    // https://developer.chrome.com/extensions/manifest
+
+    "name": "The Dashboard",
+    "version": "1.0",
+    "manifest_version": 2,
+
+    "chrome_url_overrides": {
+        "newtab": "newtab.html"
+    }
+}
