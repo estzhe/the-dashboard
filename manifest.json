@@ -5,6 +5,10 @@
     "version": "1.0",
     "manifest_version": 2,
 
+    "permissions": [
+        "identity"
+    ],
+
     "chrome_url_overrides": {
         "newtab": "newtab.html"
     }
