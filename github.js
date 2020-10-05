@@ -5,9 +5,22 @@ document.addEventListener("DOMContentLoaded", () =>
     document.getElementById("btnGithub").addEventListener("click", () =>
     {
         const documentUri = prompt("Document URI");
-        getDocumentContent(documentUri).then(text => console.log(text));
+        getDocumentContent(documentUri).then(
+            text =>
+            {
+                const markdown = renderMarkdown(text);
+                
+                console.log(markdown);
+
+                document.getElementById("divGithub").innerHTML = markdown;
+            });
     });
 });
+
+function renderMarkdown(text)
+{
+    return marked(text);
+}
 
 function getDocumentContent(documentUri)
 {
