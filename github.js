@@ -1,11 +1,15 @@
 "use strict";
 
+import { getGithubAccount } from './github-accounts.mjs';
+
 document.addEventListener("DOMContentLoaded", () =>
 {
     document.getElementById("btnGithub").addEventListener("click", () =>
     {
         const documentUri = prompt("Document URI");
-        getDocumentContent(documentUri).then(
+        const accountName = prompt("Account to use");
+
+        getDocumentContent(documentUri, accountName).then(
             text =>
             {
                 const markdown = renderMarkdown(text);
@@ -22,20 +26,8 @@ function renderMarkdown(text)
     return marked(text);
 }
 
-function getDocumentContent(documentUri)
+function getDocumentContent(documentUri, accountName)
 {
-    const storage = localStorage;
-
-    if (!storage.getItem("github.accounts"))
-    {
-        const name = prompt("Account name");
-        const token = prompt("Personal access token");
-
-        storage.setItem("github.accounts", JSON.stringify([{ name, token }]));
-    }
-
-    const account = JSON.parse(storage.getItem("github.accounts"))[0];
-
     const documentUriRegex = /github\.com\/(?<owner>[^\/]+)\/(?<repo>[^\/]+)\/blob\/(?<branch>[^\/]+)\/(?<path>.+)/i;
     const match = documentUriRegex.exec(documentUri);
     if (!match)
@@ -45,11 +37,13 @@ function getDocumentContent(documentUri)
 
     const document = match.groups;
 
+    const account = getGithubAccount(accountName);
+
     return fetch(
         `https://api.github.com/repos/${document.owner}/${document.repo}/contents/${document.path}?ref=${document.branch}`,
         {
             headers: {
-                "Accept": "application/vnd.github.VERSION.raw",
+                "Accept": "application/vnd.github.v3.raw",
                 "Authorization": `Bearer ${account.token}`
             }
         })

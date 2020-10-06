@@ -5,14 +5,23 @@
     <title>New Tab</title>
 
     <script src="lib/marked.min.js"></script>
+
     <script type="module" src="github.js"></script>
+    <script type="module" src="github-issues.js"></script>
 </head>
 
 <body>
     <h1>Hello!</h1>
 
-    <button id="btnGithub">Authorize GitHub</button>
-    <div id="divGithub"></div>
+    <div>
+        <button id="btnGithub">GitHub: markdown</button>
+        <div id="divGithub"></div>
+    </div>
+
+    <div>
+        <button id="btnGithubIssues">GitHub: issues</button>
+        <div id="divGithubIssues"></div>
+    </div>
 </body>
 
 </html>
