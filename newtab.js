@@ -1,19 +1,22 @@
 "use strict";
 
-import { GithubMarkdownComponent } from '/components/github-markdown.js';
-import { GithubIssuesComponent } from '/components/github-issues.js';
+import { GithubMarkdownComponent } from "./components/github-markdown.js";
+import { GithubIssuesComponent } from "./components/github-issues.js";
+import { MarkdownTextComponent } from "./components/markdown-text.js";
 
-const knownComponents = {
-    "github-markdown": GithubMarkdownComponent,
-    "github-issues": GithubIssuesComponent
-};
+const knownComponents = [
+    GithubMarkdownComponent,
+    GithubIssuesComponent,
+    MarkdownTextComponent
+];
 
-const components = [];
+const componentInstances = [];
 
 document.addEventListener("DOMContentLoaded", () =>
 {
-    const componentContainers = document.body.querySelectorAll("div[component]");
+    const nameToKnownComponentMap = Object.fromEntries(knownComponents.map(c => [c.name, c]));
 
+    const componentContainers = document.body.querySelectorAll("div[component]");
     for (const container of componentContainers)
     {
         const componentName = container.getAttribute("component");
@@ -22,15 +25,17 @@ document.addEventListener("DOMContentLoaded", () =>
             throw new Error(`One of the components is missing a component name.`);
         }
 
-        const component = knownComponents[componentName];
+        const component = nameToKnownComponentMap[componentName];
         if (!component)
         {
             throw new Error(`${componentName} is not a known component.`);
         }
 
+        container.classList.add(componentName);
+
         const instance = new component(container);
         instance.render();
 
-        components.push(instance);
+        componentInstances.push(instance);
     }
 });

@@ -1,7 +1,7 @@
 "use strict";
 
-import { Github } from '/lib/github.js';
-import { Argument } from '/lib/argument.js';
+import { Github } from '../lib/github.js';
+import { Argument } from '../lib/argument.js';
 
 export class GithubIssuesComponent
 {
@@ -23,6 +23,8 @@ export class GithubIssuesComponent
         this.title = container.getAttribute("title");
         this.filter = filterString ? GithubIssuesComponent.#parseFilterString(filterString) : null;
     }
+
+    static get name() { return "github-issues"; }
 
     render()
     {

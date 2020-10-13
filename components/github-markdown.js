@@ -1,7 +1,7 @@
 "use strict";
 
-import { Github } from '/lib/github.js';
-import { Argument } from '/lib/argument.js';
+import { Github } from '../lib/github.js';
+import { Argument } from '../lib/argument.js';
 
 export class GithubMarkdownComponent
 {
@@ -20,6 +20,8 @@ export class GithubMarkdownComponent
         this.accountName = accountName;
         this.documentInfo = GithubMarkdownComponent.#parseDocumentUri(documentUri);
     }
+
+    static get name() { return "github-markdown"; }
 
     render()
     {
