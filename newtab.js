@@ -3,11 +3,13 @@
 import { GithubMarkdownComponent } from "./components/github-markdown.js";
 import { GithubIssuesComponent } from "./components/github-issues.js";
 import { MarkdownTextComponent } from "./components/markdown-text.js";
+import { GmailComponent } from "./components/gmail.js";
 
 const knownComponents = [
     GithubMarkdownComponent,
     GithubIssuesComponent,
-    MarkdownTextComponent
+    MarkdownTextComponent,
+    GmailComponent
 ];
 
 const componentInstances = [];

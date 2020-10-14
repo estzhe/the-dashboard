@@ -1,6 +1,4 @@
 {
-    // https://developer.chrome.com/extensions/manifest
-
     "name": "The Dashboard",
     "version": "1.0",
     "manifest_version": 2,
@@ -11,5 +9,14 @@
 
     "chrome_url_overrides": {
         "newtab": "newtab.html"
-    }
+    },
+
+    "oauth2": {
+        "client_id": "42850195340-5tsm81faq0opnjo8pibkdse6ha3c2p7m.apps.googleusercontent.com",
+        "scopes": [
+            "https://www.googleapis.com/auth/gmail.readonly"
+        ]
+    },
+
+    "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAiXQWtHD6Z4pgwILerljyVQs9HHybQ5Zj3sBATVBF2ZGzfEWsjBGP2igqI3t2bx2Xi5BP5XqdpPcFWZNNYGaT6k3fp28ngesQchy9sB8h6Cxb6eRhrgD1M54VX3AiTElT3Nx5N1Qcxado18zTcK5l9HvQgZoVF+m+hFeNIug8sSxzLZaTl61lSQThpwY3kLmBAaxCNrj3IurgJIHTW56pkmU1+frvJW9awcfkLdOOsJEvk6wC0r/q2znRi+DRKFvsDCAZqi2iDQ/9Y7RzR9ORL0ozNT+loRGrVxczz7Tt1wPindEzucxfJCeUSfcdfGg7paAEq3nAEWZEd/U2e2f70QIDAQAB"
 }
