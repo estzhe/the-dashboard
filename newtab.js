@@ -16,6 +16,9 @@ const componentInstances = [];
 
 document.addEventListener("DOMContentLoaded", () =>
 {
+    document.querySelector("div.components-container").innerHTML =
+        localStorage.getItem("options.layout") ?? "";
+
     const nameToKnownComponentMap = Object.fromEntries(knownComponents.map(c => [c.name, c]));
 
     const componentContainers = document.body.querySelectorAll("div[component]");
