@@ -18,4 +18,13 @@ document.addEventListener("DOMContentLoaded", () =>
     });
 
     layoutTextarea.value = localStorage.getItem("options.layout") ?? "";
+
+    document.addEventListener("keydown", e =>
+    {
+        if (e.ctrlKey && e.key === "s")
+        {
+            e.preventDefault();
+            saveButton.click();
+        }
+    });
 });

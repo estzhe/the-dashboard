@@ -9,6 +9,7 @@ export class GmailComponent
         Argument.notNullOrUndefined(container, "container");
 
         this.container = container;
+        this.title = container.getAttribute("title");
     }
 
     static get name() { return "gmail"; }
@@ -19,7 +20,8 @@ export class GmailComponent
 
         const threads = await this.#fetchThreads();
         
-        this.container.innerHTML = 
+        let html = this.title ? `<h1>${this.title}</h1>` : "";
+        html +=
             threads.map(thread =>
             {
                 return `
@@ -32,6 +34,8 @@ export class GmailComponent
                     </div>`;
             })
             .join("\n");
+
+        this.container.innerHTML = html;
     }
 
     #fetchThreads()
@@ -121,6 +125,7 @@ export class GmailComponent
     }
 }
 
+// TODO: move to common
 function escapeHtml(html)
 {
     Argument.notNullOrUndefined(html, "html");
