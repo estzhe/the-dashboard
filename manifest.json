@@ -4,7 +4,8 @@
     "manifest_version": 2,
 
     "permissions": [
-        "identity"
+        "identity",
+        "geolocation"
     ],
 
     "chrome_url_overrides": {
@@ -18,6 +19,8 @@
             "https://www.googleapis.com/auth/calendar.readonly"
         ]
     },
+
+    "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
 
     "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAiXQWtHD6Z4pgwILerljyVQs9HHybQ5Zj3sBATVBF2ZGzfEWsjBGP2igqI3t2bx2Xi5BP5XqdpPcFWZNNYGaT6k3fp28ngesQchy9sB8h6Cxb6eRhrgD1M54VX3AiTElT3Nx5N1Qcxado18zTcK5l9HvQgZoVF+m+hFeNIug8sSxzLZaTl61lSQThpwY3kLmBAaxCNrj3IurgJIHTW56pkmU1+frvJW9awcfkLdOOsJEvk6wC0r/q2znRi+DRKFvsDCAZqi2iDQ/9Y7RzR9ORL0ozNT+loRGrVxczz7Tt1wPindEzucxfJCeUSfcdfGg7paAEq3nAEWZEd/U2e2f70QIDAQAB"
 }

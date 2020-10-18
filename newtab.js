@@ -5,6 +5,7 @@ import { GithubIssuesComponent } from "./components/github-issues.js";
 import { MarkdownTextComponent } from "./components/markdown-text.js";
 import { GmailComponent } from "./components/gmail.js";
 import { GoogleCalendarComponent } from "./components/google-calendar.js";
+import { WeatherComponent } from './components/weather/component.js';
 
 const knownComponents = [
     GithubMarkdownComponent,
@@ -12,6 +13,7 @@ const knownComponents = [
     MarkdownTextComponent,
     GmailComponent,
     GoogleCalendarComponent,
+    WeatherComponent,
 ];
 
 const componentInstances = [];
