@@ -1,13 +1,15 @@
-"use strict";
+import Github from '/components/github/github.js';
+import Argument from '/lib/argument.js';
+import BaseComponent from '/components/base-component.js';
 
-import { Github } from '../lib/github.js';
-import { Argument } from '../lib/argument.js';
-
-export class GithubMarkdownComponent
+export default class GithubMarkdownComponent extends BaseComponent
 {
-    constructor(container)
+    #accountName;
+    #documentInfo;
+
+    constructor(root, container)
     {
-        Argument.notNullOrUndefined(container, "container");
+        super(root, container);
 
         const accountName = container.getAttribute("account");
         const documentUri = container.getAttribute("uri");
@@ -16,27 +18,28 @@ export class GithubMarkdownComponent
             throw new Error("github-markdown: 'uri' attribute is required.");
         }
 
-        this.container = container;
-        this.accountName = accountName;
-        this.documentInfo = GithubMarkdownComponent.#parseDocumentUri(documentUri);
+        this.#accountName = accountName;
+        this.#documentInfo = GithubMarkdownComponent.#parseDocumentUri(documentUri);
     }
 
     static get name() { return "github-markdown"; }
 
-    render()
+    async render()
     {
-        // TODO: cache
+        const accessToken = Github.getPersonalAccessToken(this.#accountName);
 
-        const personalAccessToken = Github.getPersonalAccessToken(this.accountName);
-
-        return GithubMarkdownComponent
-            .#fetchDocument(this.documentInfo, personalAccessToken)
-            .then(markdown => this.container.innerHTML = marked(markdown));
+        const markdown = await GithubMarkdownComponent.#fetchDocument(
+            this.#documentInfo, accessToken);
+        
+        this._container.innerHTML = marked(markdown);
     }
 
-    static #fetchDocument(documentInfo, accessToken)
+    static async #fetchDocument(documentInfo, accessToken)
     {
-        return fetch(
+        Argument.notNullOrUndefined(documentInfo, "documentInfo");
+        Argument.notNullOrUndefinedOrEmpty(accessToken, "accessToken");
+
+        const response = await fetch(
             `https://api.github.com` +
                 `/repos/${documentInfo.owner}/${documentInfo.repo}` +
                 `/contents/${documentInfo.path}` +
@@ -46,14 +49,13 @@ export class GithubMarkdownComponent
                     "Accept": "application/vnd.github.v3.raw",
                     "Authorization": `Bearer ${accessToken}`
                 }
-            })
-            .then(c => c.text());
+            });
+        
+        return await response.text();
     }
 
     static #parseDocumentUri(uri)
     {
-        // TODO: centralized error reporting
-
         const documentUriRegex = /github\.com\/(?<owner>[^\/]+)\/(?<repo>[^\/]+)\/blob\/(?<branch>[^\/]+)\/(?<path>.+)/i;
         const match = documentUriRegex.exec(uri);
         if (!match)

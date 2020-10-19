@@ -1,0 +1,13 @@
+{{#if title}}
+    <h1>{{title}}</h1>
+{{/if}}
+
+{{#each threads}}
+    <div class='thread'>
+        <a href='https://mail.google.com/mail/?authuser={{ownerEmailAddress}}#inbox/{{this.threadId}}'
+           title='{{thread.snippet}}'
+           style='font-weight: {{#if this.isUnread}}bold{{else}}normal{{/if}}'>
+            {{#if this.from.displayName}}this.from.displayName{{else}}this.from.email{{/if}}: {{this.subject}}
+        </a>
+    </div>
+{{/each}}

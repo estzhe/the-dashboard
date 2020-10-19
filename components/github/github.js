@@ -1,8 +1,6 @@
-"use strict";
+import Argument from '/lib/argument.js';
 
-import { Argument } from "./argument.js";
-
-export class Github
+export default class Github
 {
     static getPersonalAccessToken(accountName)
     {

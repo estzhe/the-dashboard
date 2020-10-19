@@ -1,29 +1,9 @@
 "use strict";
 
-import { GithubMarkdownComponent } from "./components/github-markdown.js";
-import { GithubIssuesComponent } from "./components/github-issues.js";
-import { MarkdownTextComponent } from "./components/markdown-text.js";
-import { GmailComponent } from "./components/gmail.js";
-import { GoogleCalendarComponent } from "./components/google-calendar.js";
-import { WeatherComponent } from './components/weather/component.js';
-
-const knownComponents = [
-    GithubMarkdownComponent,
-    GithubIssuesComponent,
-    MarkdownTextComponent,
-    GmailComponent,
-    GoogleCalendarComponent,
-    WeatherComponent,
-];
-
-const componentInstances = [];
-
-document.addEventListener("DOMContentLoaded", () =>
+document.addEventListener("DOMContentLoaded", async () =>
 {
     document.querySelector("div.components-container").innerHTML =
         localStorage.getItem("options.layout") ?? "";
-
-    const nameToKnownComponentMap = Object.fromEntries(knownComponents.map(c => [c.name, c]));
 
     const componentContainers = document.body.querySelectorAll("div[component]");
     for (const container of componentContainers)
@@ -34,17 +14,14 @@ document.addEventListener("DOMContentLoaded", () =>
             throw new Error(`One of the components is missing a component name.`);
         }
 
-        const component = nameToKnownComponentMap[componentName];
-        if (!component)
-        {
-            throw new Error(`${componentName} is not a known component.`);
-        }
+        const componentRoot = `/components/${componentName}`;
+        const componentFileName = `${componentName.replace("/", "-")}.js`;
 
+        const { default: ComponentClass } = await import(`.${componentRoot}/${componentFileName}`);
+        
         container.classList.add(componentName);
 
-        const instance = new component(container);
-        instance.render();
-
-        componentInstances.push(instance);
+        const instance = new ComponentClass(componentRoot, container);
+        await instance.render();
     }
 });

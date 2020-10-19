@@ -14,10 +14,7 @@
 
     "oauth2": {
         "client_id": "42850195340-5tsm81faq0opnjo8pibkdse6ha3c2p7m.apps.googleusercontent.com",
-        "scopes": [
-            "https://www.googleapis.com/auth/gmail.readonly",
-            "https://www.googleapis.com/auth/calendar.readonly"
-        ]
+        "scopes": []
     },
 
     "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
