@@ -41,7 +41,6 @@ export default class AsanaComponent extends BaseComponent
                 upcoming: tasks.filter(t => t.assignee_status === "upcoming"),
             }
         };
-        console.log(tasks);
 
         this._container.innerHTML = await this._template("template", data);
     }
