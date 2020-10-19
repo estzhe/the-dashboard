@@ -33,7 +33,7 @@ export default class GoogleMailComponent extends BaseComponent
 
     static async #fetchThreads(accessToken)
     {
-        Argument.notNullOrUndefined(accessToken, "accessToken");
+        Argument.notNullOrUndefinedOrEmpty(accessToken, "accessToken");
 
         const threads = await fetch(
             "https://gmail.googleapis.com/gmail/v1/users/me/threads",
@@ -80,7 +80,7 @@ export default class GoogleMailComponent extends BaseComponent
 
     static async #fetchEmailAddress(accessToken)
     {
-        Argument.notNullOrUndefined(accessToken, "accessToken");
+        Argument.notNullOrUndefinedOrEmpty(accessToken, "accessToken");
 
         const response = await fetch(
             "https://gmail.googleapis.com/gmail/v1/users/me/profile",

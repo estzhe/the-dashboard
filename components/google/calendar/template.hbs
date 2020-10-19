@@ -3,8 +3,8 @@
 {{/if}}
 
 {{#each eventInfos}}
-    <div style='background-color: {{{this.color.background}}}'>
-        {{this.event.start.dateTime}} - {{this.event.end.dateTime}}:
-        <a href="{{{this.event.htmlLink}}}">{{this.event.summary}}</a> | {{this.calendar.summary}}
+    <div style='background-color: {{{color.background}}}'>
+        {{event.start.dateTime}} - {{event.end.dateTime}}:
+        <a href="{{{event.htmlLink}}}">{{event.summary}}</a> | {{calendar.summary}}
     </div>
 {{/each}}

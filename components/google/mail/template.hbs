@@ -4,10 +4,10 @@
 
 {{#each threads}}
     <div class='thread'>
-        <a href='https://mail.google.com/mail/?authuser={{ownerEmailAddress}}#inbox/{{this.threadId}}'
+        <a href='https://mail.google.com/mail/?authuser={{ownerEmailAddress}}#inbox/{{threadId}}'
            title='{{thread.snippet}}'
-           style='font-weight: {{#if this.isUnread}}bold{{else}}normal{{/if}}'>
-            {{#if this.from.displayName}}this.from.displayName{{else}}this.from.email{{/if}}: {{this.subject}}
+           style='font-weight: {{#if isUnread}}bold{{else}}normal{{/if}}'>
+            {{#if from.displayName}}from.displayName{{else}}from.email{{/if}}: {{subject}}
         </a>
     </div>
 {{/each}}

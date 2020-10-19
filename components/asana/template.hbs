@@ -1,0 +1,40 @@
+<h1>Asana</h1>
+
+<div>
+    <h2>Inbox</h2>
+    {{#each tasks.inbox}}
+        <div>
+            <a href="https://app.asana.com/0/{{../listId}}/{{gid}}/f" title="{{notes}}">{{name}}</a>
+
+            {{#if due_on}}
+                - {{due_on}}
+            {{/if}}
+        </div>
+    {{/each}}
+</div>
+
+<div>
+    <h2>Today</h2>
+    {{#each tasks.today}}
+        <div>
+            <a href="https://app.asana.com/0/{{../listId}}/{{gid}}/f" title="{{notes}}">{{name}}</a>
+
+            {{#if due_on}}
+                - {{due_on}}
+            {{/if}}
+        </div>
+    {{/each}}
+</div>
+
+<div>
+    <h2>Upcoming</h2>
+    {{#each tasks.upcoming}}
+        <div>
+            <a href="https://app.asana.com/0/{{../listId}}/{{gid}}/f" title="{{notes}}">{{name}}</a>
+
+            {{#if due_on}}
+                - {{due_on}}
+            {{/if}}
+        </div>
+    {{/each}}
+</div>

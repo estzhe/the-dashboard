@@ -15,13 +15,13 @@ Snow: {{current.snow.1h}} mm<br/>
     <tr>
         <th>Time</th>
         {{#each minutely}}
-            <td>{{unix-time this.dt}}</td>
+            <td>{{unix-time dt}}</td>
         {{/each}}
     </tr>
     <tr>
         <th>Precipitation</th>
         {{#each minutely}}
-            <td>{{this.precipitation}} mm</td>
+            <td>{{precipitation}} mm</td>
         {{/each}}
     </tr>
 </table>
@@ -44,16 +44,16 @@ Snow: {{current.snow.1h}} mm<br/>
     </tr>
     {{#each hourly}}
     <tr>
-        <td>{{unix-time this.dt}}</td>
-        <td>{{round this.temp}} °C</td>
-        <td>{{this.clouds}}%</td>
-        <td>{{this.pop}}</td>
-        <td>{{this.rain.1h}} mm</td>
-        <td>{{this.snow.1h}} mm</td>
-        <td>{{this.weather.[0].main}}</td>
-        <td>{{this.weather.[0].description}}</td>
+        <td>{{unix-time dt}}</td>
+        <td>{{round temp}} °C</td>
+        <td>{{clouds}}%</td>
+        <td>{{pop}}</td>
+        <td>{{rain.1h}} mm</td>
+        <td>{{snow.1h}} mm</td>
+        <td>{{weather.[0].main}}</td>
+        <td>{{weather.[0].description}}</td>
         <td>
-            <img src="http://openweathermap.org/img/wn/{{this.weather.[0].icon}}@2x.png"/>
+            <img src="http://openweathermap.org/img/wn/{{weather.[0].icon}}@2x.png"/>
         </td>
     </tr>
     {{/each}}
@@ -83,21 +83,21 @@ Snow: {{current.snow.1h}} mm<br/>
     </tr>
     {{#each daily}}
     <tr>
-        <td>{{unix-date this.dt}}</td>
-        <td>{{round this.temp.min}} °C</td>
-        <td>{{round this.temp.max}} °C</td>
-        <td>{{round this.temp.morn}} °C</td>
-        <td>{{round this.temp.day}} °C</td>
-        <td>{{round this.temp.eve}} °C</td>
-        <td>{{round this.temp.night}} °C</td>
-        <td>{{this.clouds}}%</td>
-        <td>{{this.pop}}</td>
-        <td>{{this.rain.1h}} mm</td>
-        <td>{{this.snow.1h}} mm</td>
-        <td>{{this.weather.[0].main}}</td>
-        <td>{{this.weather.[0].description}}</td>
+        <td>{{unix-date dt}}</td>
+        <td>{{round temp.min}} °C</td>
+        <td>{{round temp.max}} °C</td>
+        <td>{{round temp.morn}} °C</td>
+        <td>{{round temp.day}} °C</td>
+        <td>{{round temp.eve}} °C</td>
+        <td>{{round temp.night}} °C</td>
+        <td>{{clouds}}%</td>
+        <td>{{pop}}</td>
+        <td>{{rain.1h}} mm</td>
+        <td>{{snow.1h}} mm</td>
+        <td>{{weather.[0].main}}</td>
+        <td>{{weather.[0].description}}</td>
         <td>
-            <img src="http://openweathermap.org/img/wn/{{this.weather.[0].icon}}@2x.png"/>
+            <img src="http://openweathermap.org/img/wn/{{weather.[0].icon}}@2x.png"/>
         </td>
     </tr>
     {{/each}}
