@@ -1,40 +1,27 @@
-<h1>Asana</h1>
+{{#if title}}
+    <h1>{{title}}</h1>
+{{/if}}
 
-<div>
-    <h2>Inbox</h2>
-    {{#each tasks.inbox}}
-        <div>
-            <a href="https://app.asana.com/0/{{../listId}}/{{gid}}/f" title="{{notes}}">{{name}}</a>
+<a class="card-action material-icons"
+    href="https://app.asana.com/0/{{listId}}">launch</a>
 
-            {{#if due_on}}
-                - {{due_on}}
-            {{/if}}
-        </div>
-    {{/each}}
-</div>
+{{#each tasks}}
+    <a class="item"
+        href="https://app.asana.com/0/{{../listId}}/{{gid}}/f"
+        title="{{notes}}">
 
-<div>
-    <h2>Today</h2>
-    {{#each tasks.today}}
-        <div>
-            <a href="https://app.asana.com/0/{{../listId}}/{{gid}}/f" title="{{notes}}">{{name}}</a>
+        <span class="column {{#ifEquals assignee_status 'inbox'}}negative-attention{{/ifEquals}}">
+            {{name}}
+        </span>
 
-            {{#if due_on}}
-                - {{due_on}}
-            {{/if}}
-        </div>
-    {{/each}}
-</div>
-
-<div>
-    <h2>Upcoming</h2>
-    {{#each tasks.upcoming}}
-        <div>
-            <a href="https://app.asana.com/0/{{../listId}}/{{gid}}/f" title="{{notes}}">{{name}}</a>
-
-            {{#if due_on}}
-                - {{due_on}}
-            {{/if}}
-        </div>
-    {{/each}}
-</div>
+        {{#if due_on}}
+            <span class="column {{#if is_past_due}}negative-attention{{/if}} {{#if is_due_today}}positive-attention{{/if}}"
+                  style="flex: 0 0 5rem;">
+                {{date-wordy due_on}}
+            </span>
+        {{/if}}
+    
+    </a>
+{{else}}
+    No tasks for today!
+{{/each}}

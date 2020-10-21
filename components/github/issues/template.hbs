@@ -1,5 +1,20 @@
-<h1>{{title}}</h1>
+{{#if title}}
+    <h1>{{title}}</h1>
+{{/if}}
+
+<a class="card-action material-icons" href="{{url}}">
+    launch
+</a>
 
 {{#each issues}}
-    <div>{{title}}</div>
+    <a class="item" href="{{{html_url}}}" data-issue-id="{{id}}">
+        <span class="column">
+            {{title}}
+        </span>
+    </a>
+{{else}}
+    No issues.
 {{/each}}
+
+<dialog class="issue-viewer" style="width: 70%; height: 75%; overflow: auto;">
+</dialog>

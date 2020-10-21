@@ -19,7 +19,7 @@ document.addEventListener("DOMContentLoaded", async () =>
 
         const { default: ComponentClass } = await import(`.${componentRoot}/${componentFileName}`);
         
-        container.classList.add(componentName);
+        container.classList.add(componentName, "component");
 
         const instance = new ComponentClass(componentRoot, container);
         await instance.render();

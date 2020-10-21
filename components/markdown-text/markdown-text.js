@@ -21,27 +21,31 @@ export default class MarkdownTextComponent extends BaseComponent
 
     async render()
     {
-        this._container.innerHTML = await this._template("template");
+        const html = marked(this.#loadText());
+        this._container.innerHTML = await this._template("template", html);
 
         const elements = {
             container: this._container,
             text: this._container.querySelector("div.text"),
-            editButton: this._container.querySelector("button.edit"),
-            saveButton: this._container.querySelector("button.save"),
-            cancelButton: this._container.querySelector("button.cancel"),
+            editButton: this._container.querySelector(".edit"),
+            saveButton: this._container.querySelector(".save"),
+            cancelButton: this._container.querySelector(".cancel"),
             textarea: this._container.querySelector("textarea"),
             preview: this._container.querySelector("div.preview"),
             editorDialog: this._container.querySelector("dialog.editor")
         };
 
-        elements.editButton.addEventListener("click", () =>
+        elements.editButton.addEventListener("click", e =>
         {
+            e.preventDefault();
+
             const text = this.#loadText() ?? "";
 
             elements.textarea.value = text;
             elements.preview.innerHTML = marked(text);
 
             elements.editorDialog.showModal();
+            elements.textarea.focus();
         });
 
         elements.saveButton.addEventListener("click", () =>
@@ -63,8 +67,6 @@ export default class MarkdownTextComponent extends BaseComponent
         {
             elements.preview.innerHTML = marked(e.target.value);
         });
-
-        elements.text.innerHTML = marked(this.#loadText() ?? "<i>markdown-text: Click 'edit' to add text.</i>");
     }
 
     #loadText()

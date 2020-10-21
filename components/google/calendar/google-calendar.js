@@ -1,6 +1,7 @@
 import Argument from '/lib/argument.js';
 import Google from '/components/google/google.js';
 import BaseComponent from '/components/base-component.js';
+import "/lib/date.js";
 
 export default class GoogleCalendarComponent extends BaseComponent
 {
@@ -51,25 +52,81 @@ export default class GoogleCalendarComponent extends BaseComponent
         const calendars = await GoogleCalendarComponent.#fetchCalendars(this.#calendarsToDisplay, accessToken);
         const colors = await GoogleCalendarComponent.#fetchColors(accessToken);
 
-        const arraysOfEventInfos = await Promise.all(
+        let events = await Promise.all(
             calendars.map(async calendar =>
             {
                 const events = await GoogleCalendarComponent.#fetchEvents(
                     calendar.id, this.#start, this.#end, accessToken);
                 
-                return events.map(event => ({
-                                                event,
-                                                calendar,
-                                                color: colors.calendar[calendar.colorId],
-                                            }));
+                events.forEach(event =>
+                {
+                    event.calendar = calendar;
+                    event.color = colors.calendar[calendar.colorId];
+
+                    event.isFullDay = !!event.start.date;
+
+                    if (event.isFullDay)
+                    {
+                        let parts = event.start.date.split(/\D/);
+                        parts[1]--; // month
+                        event.start = new Date(...parts);
+
+                        parts = event.end.date.split(/\D/);
+                        parts[1]--; // month
+                        event.end = new Date(...parts);
+                    }
+                    else
+                    {
+                        event.start = new Date(Date.parse(event.start.dateTime));
+                        event.end = new Date(Date.parse(event.end.dateTime));
+                    }
+                });
+
+                return events;
             }));
-        
-        const eventInfos = arraysOfEventInfos.flat().sort(
-            (e1, e2) => e1.event.start.dateTime.localeCompare(e2.event.start.dateTime));
+        events = events.flat();
+
+        const eventsByDate = [];
+        for (let date = this.#start.startOfDay(); date < this.#end; date = date.addDays(1))
+        {
+            const eventsOnThisDay = events
+                .filter(e => e.start < date.addDays(1) && date < e.end)
+                .sort((e1, e2) => e1.start.getTime() - e2.start.getTime())
+                .map(e =>
+                {
+                    const startIsOnThisDay = !(e.start < date);
+                    const endIsOnThisDay = !(e.end > date.endOfDay());
+                    const isFullDay = e.isFullDay || !startIsOnThisDay && !endIsOnThisDay;
+
+                    return {
+                        title: e.summary,
+                        uri: e.htmlLink,
+                        notes: e.notes,
+
+                        isFullDay,
+                        showStartTime: !isFullDay && startIsOnThisDay,
+                        showEndTime: !isFullDay && endIsOnThisDay,
+                        startTime: e.start,
+                        endTime: e.end,
+
+                        calendar: {
+                            name: e.calendar.summary,
+                            color: e.color.background,
+                        },
+                    };
+                });
+
+            eventsByDate.push(
+            {
+                date,
+                events: eventsOnThisDay,
+            });
+        }
 
         const data = {
             title: this.#title,
-            eventInfos,
+            emailAddress: await Google.getEmailAddress(),
+            eventsByDate,
         };
         
         this._container.innerHTML = await this._template("template", data);
@@ -92,7 +149,6 @@ export default class GoogleCalendarComponent extends BaseComponent
                     "Authorization": `Bearer ${accessToken}`
                 }
             });
-        
         const json = await response.json();
 
         return json.items;

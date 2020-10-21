@@ -1,0 +1,116 @@
+html
+{
+    font-family: 'Roboto', sans-serif;
+    font-size: 100%;
+    color: #151b26;
+}
+
+a,
+a:visited,
+a:focus
+{
+    color: #32c1ff;
+    text-decoration: none;
+}
+
+a:hover
+{
+    text-decoration: underline;
+}
+
+.center { text-align: center; }
+.right { text-align: right; }
+
+.highlight { font-weight: 500; }
+.negative-attention { color: #ed4758; }
+.positive-attention { color: #00bf9c; }
+
+.components-container
+{
+    display: flex;
+    flex-wrap: wrap;
+}
+
+    .components-container .card
+    {
+        position: relative;
+        margin: 1rem;
+        font-size: 0.8125rem;
+        overflow: auto;
+    }
+
+        .components-container .card h1
+        {
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .components-container .card h2
+        {
+            font-size: 0.8rem;
+            margin: 0.75rem 0 0 0;
+            font-weight: 500;
+        }
+
+        .components-container .card .card-action
+        {
+            position: absolute;
+            top: 0;
+            right: 0;
+            display: block;
+            margin: 0.15rem;
+            font-size: 2rem;
+            color: lightgray;
+            text-decoration: none;
+        }
+
+        .components-container .card .item
+        {
+            display: flex;
+            text-decoration: none;
+            line-height: 1.7rem;
+            color: #151b26;
+            border-bottom: 1px solid #e8ecee;
+        }
+
+        .components-container .card .item:last-of-type
+        {
+            border-bottom: none;
+        }
+
+        .components-container .card .item:hover
+        {
+            background-color: #f6f8f9;
+        }
+
+            .components-container .card .item .column
+            {
+                flex: 1 0;
+                margin-right: 0.2rem;
+            }
+
+
+table
+{
+    border: 1px solid #ccc;
+    border-collapse: collapse;
+    margin: 0;
+    padding: 0;
+    table-layout: fixed;
+}
+
+table tr
+{
+    border: 1px solid #ddd;
+}
+
+table th,
+table td
+{
+    padding: 0.3rem .5rem;
+}
+
+table th
+{
+    text-align: center;
+}

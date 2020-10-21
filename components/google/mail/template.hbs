@@ -2,12 +2,28 @@
     <h1>{{title}}</h1>
 {{/if}}
 
+<a class="card-action material-icons"
+   href="https://mail.google.com/mail/?authuser={{emailAddress}}#inbox">
+    launch
+</a>
+
 {{#each threads}}
-    <div class='thread'>
-        <a href='https://mail.google.com/mail/?authuser={{ownerEmailAddress}}#inbox/{{threadId}}'
-           title='{{thread.snippet}}'
-           style='font-weight: {{#if isUnread}}bold{{else}}normal{{/if}}'>
-            {{#if from.displayName}}from.displayName{{else}}from.email{{/if}}: {{subject}}
-        </a>
-    </div>
+    <a class="item"
+       href="https://mail.google.com/mail/?authuser={{emailAddress}}#inbox/{{threadId}}">
+        
+        <span class="column {{#if isUnread}}highlight{{/if}}"
+              title="{{snippet}}">
+            {{subject}}
+        </span>
+        
+        <span class="column" style="flex: 0 0 8rem" title="{{from.email}}">
+            {{#if from.displayName}}
+                {{from.displayName}}
+            {{else}}
+                {{from.email}}
+            {{/if}}
+        </span>
+    </a>
+{{else}}
+    No emails today.
 {{/each}}

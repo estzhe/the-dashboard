@@ -2,9 +2,46 @@
     <h1>{{title}}</h1>
 {{/if}}
 
-{{#each eventInfos}}
-    <div style='background-color: {{{color.background}}}'>
-        {{event.start.dateTime}} - {{event.end.dateTime}}:
-        <a href="{{{event.htmlLink}}}">{{event.summary}}</a> | {{calendar.summary}}
-    </div>
+<a class="card-action material-icons"
+   href="https://calendar.google.com/calendar/?authuser={{emailAddress}}">
+    launch
+</a>
+
+{{#each eventsByDate}}
+    <h2>{{date-wordy date}}</h2>
+
+    {{#each events}}
+        <a class="item" href="{{{uri}}}" title="{{notes}}">
+
+            <span class="column right" style="flex: 0 0 2rem">
+                {{#if showStartTime}}
+                    {{time startTime}}
+                {{/if}}
+            </span>
+
+            <span class="column center" style="flex: 0 0 1rem">
+                {{#unless isFullDay}}
+                    —
+                {{/unless}}
+            </span>
+
+            <span class="column right" style="flex: 0 0 2rem;">
+                {{#if showEndTime}}
+                    {{time endTime}}
+                {{/if}}
+            </span>
+
+            <span class="column"
+                  style="color: {{{calendar.color}}}; flex: 0 0 0.1rem; margin-left: 0.5rem;"
+                  title="{{calendar.name}}">
+                  〣
+            </span>
+
+            <span class="column" style="margin-left: 0.5rem;">
+                {{title}}
+            </span>
+        </a>
+    {{else}}
+        No events on this date.
+    {{/each}}
 {{/each}}

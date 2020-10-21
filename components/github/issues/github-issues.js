@@ -38,13 +38,51 @@ export default class GithubIssuesComponent extends BaseComponent
             this.#repoInfo.repo,
             accessToken);
         issues = GithubIssuesComponent.#filterIssues(issues, this.#filter);
+        issues = issues.sort((i1, i2) => i2.updated_at.localeCompare(i1.updated_at));   // recent first
 
         const data = {
             title: this.#title,
+            url: `https://github.com/${this.#repoInfo.owner}/${this.#repoInfo.repo}/issues`,
             issues,
         };
 
         this._container.innerHTML = await this._template("template", data);
+
+        const elements = {
+            dialog: this._container.querySelector("dialog.issue-viewer"),
+            items: this._container.querySelectorAll(".item"),
+        };
+
+        elements.dialog.addEventListener("keydown", e =>
+        {
+            if (e.key === "Escape")
+            {
+                e.preventDefault();
+                elements.dialog.close();
+            }
+        });
+
+        for (const item of this._container.querySelectorAll(".item"))
+        {
+            item.addEventListener("click", async e =>
+            {
+                if (e.ctrlKey || e.shiftKey) return;
+                
+                e.preventDefault();
+
+                const issueId = Number(e.target.closest(".item").dataset.issueId);
+                const issue = issues.find(x => x.id === issueId);
+
+                const data = {
+                    issue,
+                    bodyHtml: marked(issue.body),
+                };
+
+                elements.dialog.innerHTML = await this._template("issue-preview", data);
+
+                elements.dialog.showModal();
+            });
+        }
     }
 
     static async #fetchIssues(repoOwner, repoName, accessToken)

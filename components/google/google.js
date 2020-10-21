@@ -4,7 +4,7 @@ export default class Google
 {
     static getAccessToken(scopes)
     {
-        Argument.collectionNotEmpty(scopes, "scopes");
+        Argument.notNullOrUndefined(scopes, "scopes");
 
         return new Promise((resolve, reject) =>
         {
@@ -12,6 +12,7 @@ export default class Google
             {
                 if (chrome.runtime.lastError)
                 {
+                    console.log(chrome.runtime.lastError);
                     reject(chrome.runtime.lastError);
                 }
                 else
@@ -20,5 +21,22 @@ export default class Google
                 }
             });
         });
+    }
+
+    static async getEmailAddress()
+    {
+        const accessToken = await Google.getAccessToken(["email"]);
+
+        const response = await fetch(
+            "https://openidconnect.googleapis.com/v1/userinfo",
+            {
+                headers: {
+                    "Authorization": `Bearer ${accessToken}`
+                }
+            });
+        
+        const json = await response.json();
+
+        return json.email;
     }
 }

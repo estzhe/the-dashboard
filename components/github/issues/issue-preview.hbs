@@ -1,0 +1,9 @@
+<h1>
+    <a href="{{{issue.html_url}}}">{{issue.title}}</a>
+</h1>
+
+{{#if bodyHtml}}
+    {{{bodyHtml}}}
+{{else}}
+    This issue does not have any details.
+{{/if}}

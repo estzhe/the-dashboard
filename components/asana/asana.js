@@ -1,8 +1,10 @@
 import Argument from '/lib/argument.js';
 import BaseComponent from '/components/base-component.js';
+import "/lib/date.js";
 
 export default class AsanaComponent extends BaseComponent
 {
+    #title;
     #accountName;
     #listId;
 
@@ -22,6 +24,7 @@ export default class AsanaComponent extends BaseComponent
             throw new Error("asana: 'list-id' attribute is required.");
         }
 
+        this.#title = container.getAttribute("title");
         this.#accountName = accountName;
         this.#listId = listId;
     }
@@ -31,15 +34,32 @@ export default class AsanaComponent extends BaseComponent
     async render()
     {
         const accessToken = AsanaComponent.#getPersonalAccessToken(this.#accountName);
-        const tasks = await AsanaComponent.#fetchTasks(this.#listId, accessToken);
+        
+        let tasks = await AsanaComponent.#fetchTasks(this.#listId, accessToken);
+        tasks =
+            tasks.filter(t => t.assignee_status === "today").concat(
+            tasks.filter(t => t.assignee_status === "inbox"));
+        tasks = tasks.map(task =>
+                {
+                    if (task.due_on)
+                    {
+                        const parts = task.due_on.split(/\D/);
+                        parts[1] = parts[1] - 1;    // month
+
+                        const due = new Date(...parts);
+                        
+                        task.due_on = due;
+                        task.is_past_due = due < Date.today();
+                        task.is_due_today = due.startOfDay().getDate() === Date.today().getDate();
+                    }
+
+                    return task;
+                });
 
         const data = {
+            title: this.#title,
             listId: this.#listId,
-            tasks: {
-                inbox: tasks.filter(t => t.assignee_status === "inbox"),
-                today: tasks.filter(t => t.assignee_status === "today"),
-                upcoming: tasks.filter(t => t.assignee_status === "upcoming"),
-            }
+            tasks,
         };
 
         this._container.innerHTML = await this._template("template", data);

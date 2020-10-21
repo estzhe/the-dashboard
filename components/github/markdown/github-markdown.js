@@ -30,8 +30,16 @@ export default class GithubMarkdownComponent extends BaseComponent
 
         const markdown = await GithubMarkdownComponent.#fetchDocument(
             this.#documentInfo, accessToken);
+
+        const data = {
+            editUrl: `https://github.com/${this.#documentInfo.owner}` +
+                        `/${this.#documentInfo.repo}/edit` +
+                        `/${this.#documentInfo.branch}` +
+                        `/${this.#documentInfo.path}`,
+            html: marked(markdown),
+        };
         
-        this._container.innerHTML = marked(markdown);
+        this._container.innerHTML = await this._template("template", data);
     }
 
     static async #fetchDocument(documentInfo, accessToken)

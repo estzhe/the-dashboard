@@ -19,12 +19,12 @@ export default class GoogleMailComponent extends BaseComponent
     {
         const accessToken = await Google.getAccessToken(["https://www.googleapis.com/auth/gmail.readonly"]);
 
-        const ownerEmailAddress = await GoogleMailComponent.#fetchEmailAddress(accessToken);
+        const emailAddress = await Google.getEmailAddress();
         const threads = await GoogleMailComponent.#fetchThreads(accessToken);
 
         const data = {
             title: this.#title,
-            ownerEmailAddress,
+            emailAddress,
             threads,
         };
         
@@ -78,23 +78,6 @@ export default class GoogleMailComponent extends BaseComponent
         return threadFirstMessages;
     }
 
-    static async #fetchEmailAddress(accessToken)
-    {
-        Argument.notNullOrUndefinedOrEmpty(accessToken, "accessToken");
-
-        const response = await fetch(
-            "https://gmail.googleapis.com/gmail/v1/users/me/profile",
-            {
-                headers: {
-                    "Authorization": `Bearer ${accessToken}`
-                }
-            });
-        
-        const json = await response.json();
-
-        return json.emailAddress;
-    }
-
     static #parseFrom(from)
     {
         Argument.notNullOrUndefined(from, "from");
@@ -112,16 +95,4 @@ export default class GoogleMailComponent extends BaseComponent
 
         return { displayName: null, email: from };
     }
-}
-
-// TODO: move to common
-function escapeHtml(html)
-{
-    Argument.notNullOrUndefined(html, "html");
-
-    return html.replace(/&/g, "&amp;")
-                .replace(/>/g, "&gt;")
-                .replace(/</g, "&lt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&apos;");
 }
