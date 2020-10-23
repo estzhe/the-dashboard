@@ -1,104 +1,13 @@
-<h1>Weather</h1>
+<div style="width: 100%;">
+    <canvas class="temperature" style="width: 100%; display: block;" height="30"></canvas>
+    <canvas class="clouds" style="width: 100%; display: block;" height="30"></canvas>
+    <canvas class="rain-and-snow" style="width: 100%; display: block;" height="30"></canvas>
 
-<h2>Current</h2>
-Temperature: {{round current.temp}} °C <br/>
-Clouds: {{current.clouds}} % <br/>
-Sun: {{unix-time current.sunrise}} - {{unix-time current.sunset}} <br/>
-Rain: {{current.rain.1h}} mm<br/>
-Snow: {{current.snow.1h}} mm<br/>
-{{current.weather.[0].main}}<br/>
-{{current.weather.[0].description}}<br/>
-<img src="http://openweathermap.org/img/wn/{{current.weather.[0].icon}}@2x.png"/><br/>
-
-<h2>Minutely</h2>
-<table>
-    <tr>
-        <th>Time</th>
-        {{#each minutely}}
-            <td>{{unix-time dt}}</td>
+    <div style="display: flex; width: 100%; font-size: 80%">
+        {{#each hourly}}
+            <span style="flex: 1 0">
+                {{displayTime}}
+            </span>
         {{/each}}
-    </tr>
-    <tr>
-        <th>Precipitation</th>
-        {{#each minutely}}
-            <td>{{precipitation}} mm</td>
-        {{/each}}
-    </tr>
-</table>
-
-<h2>Hourly</h2>
-<table>
-    <tr>
-        <th rowspan="2">Time</th>
-        <th rowspan="2">Temperature</th>
-        <th rowspan="2">Clouds</th>
-        <th rowspan="2">Pop</th>
-        <th rowspan="2">Rain</th>
-        <th rowspan="2">Snow</th>
-        <th colspan="3">Weather</th>
-    </tr>
-    <tr>
-        <th>general</th>
-        <th>details</th>
-        <th>icon</th>
-    </tr>
-    {{#each hourly}}
-    <tr>
-        <td>{{unix-time dt}}</td>
-        <td>{{round temp}} °C</td>
-        <td>{{clouds}}%</td>
-        <td>{{pop}}</td>
-        <td>{{rain.1h}} mm</td>
-        <td>{{snow.1h}} mm</td>
-        <td>{{weather.[0].main}}</td>
-        <td>{{weather.[0].description}}</td>
-        <td>
-            <img src="http://openweathermap.org/img/wn/{{weather.[0].icon}}@2x.png"/>
-        </td>
-    </tr>
-    {{/each}}
-</table>
-
-<h2>Daily</h2>
-<table>
-    <tr>
-        <th rowspan="2">Day</th>
-        <th colspan="6">Temperature</th>
-        <th rowspan="2">Clouds</th>
-        <th rowspan="2">Pop</th>
-        <th rowspan="2">Rain</th>
-        <th rowspan="2">Snow</th>
-        <th colspan="3">Weather</th>
-    </tr>
-    <tr>
-        <th>min</th>
-        <th>max</th>
-        <th>morning</th>
-        <th>day</th>
-        <th>evening</th>
-        <th>night</th>
-        <th>general</th>
-        <th>details</th>
-        <th>icon</th>
-    </tr>
-    {{#each daily}}
-    <tr>
-        <td>{{unix-date dt}}</td>
-        <td>{{round temp.min}} °C</td>
-        <td>{{round temp.max}} °C</td>
-        <td>{{round temp.morn}} °C</td>
-        <td>{{round temp.day}} °C</td>
-        <td>{{round temp.eve}} °C</td>
-        <td>{{round temp.night}} °C</td>
-        <td>{{clouds}}%</td>
-        <td>{{pop}}</td>
-        <td>{{rain.1h}} mm</td>
-        <td>{{snow.1h}} mm</td>
-        <td>{{weather.[0].main}}</td>
-        <td>{{weather.[0].description}}</td>
-        <td>
-            <img src="http://openweathermap.org/img/wn/{{weather.[0].icon}}@2x.png"/>
-        </td>
-    </tr>
-    {{/each}}
-</table>
+    </div>
+</div>

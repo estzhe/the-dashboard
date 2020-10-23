@@ -3,6 +3,16 @@ html
     font-family: 'Roboto', sans-serif;
     font-size: 100%;
     color: #151b26;
+    padding: 0;
+    margin: 0;
+    border: none;
+}
+
+body
+{
+    padding: 0;
+    margin: 0;
+    border: none;
 }
 
 a,
