@@ -36,7 +36,9 @@ export default class GoogleMailComponent extends BaseComponent
         Argument.notNullOrUndefinedOrEmpty(accessToken, "accessToken");
 
         const threads = await fetch(
-            "https://gmail.googleapis.com/gmail/v1/users/me/threads",
+            `https://gmail.googleapis.com/gmail/v1/users/me/threads` +
+                `?includeSpamTrash=false` +
+                `&labelIds=INBOX`,
             {
                 headers: {
                     "Authorization": `Bearer ${accessToken}`

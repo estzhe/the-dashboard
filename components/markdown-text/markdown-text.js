@@ -21,7 +21,7 @@ export default class MarkdownTextComponent extends BaseComponent
 
     async render()
     {
-        const html = marked(this.#loadText());
+        const html = marked(this.#loadText() ?? "");
         this._container.innerHTML = await this._template("template", html);
 
         const elements = {
@@ -66,6 +66,15 @@ export default class MarkdownTextComponent extends BaseComponent
         elements.textarea.addEventListener("input", e =>
         {
             elements.preview.innerHTML = marked(e.target.value);
+        });
+
+        elements.editorDialog.addEventListener("keydown", e =>
+        {
+            if (e.ctrlKey && e.key === "s")
+            {
+                e.preventDefault();
+                elements.saveButton.click();
+            }
         });
     }
 

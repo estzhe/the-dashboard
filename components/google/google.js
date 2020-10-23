@@ -12,7 +12,6 @@ export default class Google
             {
                 if (chrome.runtime.lastError)
                 {
-                    console.log(chrome.runtime.lastError);
                     reject(chrome.runtime.lastError);
                 }
                 else

@@ -20,7 +20,6 @@ export default class WeatherComponent extends BaseComponent
         for (const h of data.hourly)
         {
             const date = new Date(h.dt * 1000);
-            console.log(date);
             h.displayTime = date.getHours() % 2 == 0
                 ? (date.getHours() % 12 || 12) + "" + (date.getHours() < 12 ? "am" : "pm")
                 : "";
