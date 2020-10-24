@@ -27,5 +27,11 @@ document.addEventListener("DOMContentLoaded", () =>
             e.preventDefault();
             saveButton.click();
         }
+
+        if (e.key == "Escape")
+        {
+            e.preventDefault();
+            cancelButton.click();
+        }
     });
 });
