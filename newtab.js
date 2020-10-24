@@ -1,14 +1,27 @@
 "use strict";
 
+const storage = localStorage;
+
 document.addEventListener("DOMContentLoaded", async () =>
 {
     document.querySelector("div.components-container").innerHTML =
-        localStorage.getItem("options.layout") ?? "";
+        storage.getItem("options.layout") ?? "";
 
-    let componentInstances = [];
+    const containers = document.body.querySelectorAll("div[component]");
+    const instances = await createComponents(containers);
 
-    const componentContainers = document.body.querySelectorAll("div[component]");
-    for (const container of componentContainers)
+    document.querySelector(".refresh").addEventListener("click", async e =>
+    {
+        e.preventDefault();
+        await refreshComponents(instances);
+    });
+});
+
+async function createComponents(containers)
+{
+    const instances = [];
+
+    for (const container of containers)
     {
         const componentName = container.getAttribute("component");
         if (!componentName)
@@ -24,16 +37,15 @@ document.addEventListener("DOMContentLoaded", async () =>
         container.classList.add(componentName, "component");
 
         const instance = new ComponentClass(componentRoot, container);
-        componentInstances.push(instance);
+        instances.push(instance);
     }
-    await Promise.all(
-        componentInstances.map(instance => instance.render(/* refresh */ false)));
 
-    document.querySelector(".refresh").addEventListener("click", async e =>
-    {
-        e.preventDefault();
+    await Promise.all(instances.map(instance => instance.render(/* refresh */ false)));
 
-        await Promise.all(
-            componentInstances.map(instance => instance.render(/* refresh */ true)));
-    });
-});
+    return instances;
+}
+
+async function refreshComponents(instances)
+{
+    await Promise.all(instances.map(instance => instance.render(/* refresh */ true)));
+}
