@@ -17,8 +17,6 @@ export default class MarkdownTextComponent extends BaseComponent
         this.#id = id;
     }
 
-    static get name() { return "markdown-text"; }
-
     async render()
     {
         const html = marked(this.#loadText() ?? "");
@@ -70,7 +68,8 @@ export default class MarkdownTextComponent extends BaseComponent
 
         elements.editorDialog.addEventListener("keydown", e =>
         {
-            if (e.ctrlKey && e.key === "s")
+            if (e.ctrlKey && e.key === "s" ||
+                e.ctrlKey && e.key == "Enter")
             {
                 e.preventDefault();
                 elements.saveButton.click();
@@ -80,11 +79,11 @@ export default class MarkdownTextComponent extends BaseComponent
 
     #loadText()
     {
-        return localStorage.getItem(`markdown-text.text.${this.#id}`);
+        return this._services.storage.getItem(`markdown-text.text.${this.#id}`);
     }
 
     #saveText(value)
     {
-        localStorage.setItem(`markdown-text.text.${this.#id}`, value);
+        this._services.storage.setItem(`markdown-text.text.${this.#id}`, value);
     }
 }

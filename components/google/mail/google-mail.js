@@ -13,15 +13,26 @@ export default class GoogleMailComponent extends BaseComponent
         this.#title = container.getAttribute("title");
     }
 
-    static get name() { return "google-mail"; }
-
-    async render()
+    async render(refresh)
     {
-        const accessToken = await Google.getAccessToken(["https://www.googleapis.com/auth/gmail.readonly"]);
+        const { emailAddress, threads } = await this._services.cache.get(
+            "emails",
+            async () =>
+            {
+                const accessToken = await Google.getAccessToken(["https://www.googleapis.com/auth/gmail.readonly"]);
 
-        const emailAddress = await Google.getEmailAddress();
-        const threads = await GoogleMailComponent.#fetchThreads(accessToken);
+                const emailAddress = await Google.getEmailAddress();
+                const threads = await GoogleMailComponent.#fetchThreads(accessToken);
 
+                return { emailAddress, threads };
+            },
+            refresh);
+
+        await this.#renderEmails(emailAddress, threads);
+    }
+
+    async #renderEmails(emailAddress, threads)
+    {
         const data = {
             title: this.#title,
             emailAddress,

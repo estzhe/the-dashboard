@@ -22,15 +22,24 @@ export default class GithubMarkdownComponent extends BaseComponent
         this.#documentInfo = GithubMarkdownComponent.#parseDocumentUri(documentUri);
     }
 
-    static get name() { return "github-markdown"; }
-
-    async render()
+    async render(refresh)
     {
-        const accessToken = Github.getPersonalAccessToken(this.#accountName);
+        const markdown = await this._services.cache.get(
+            "markdown",
+            async () =>
+            {
+                const accessToken = Github.getPersonalAccessToken(this.#accountName);
 
-        const markdown = await GithubMarkdownComponent.#fetchDocument(
-            this.#documentInfo, accessToken);
+                return await GithubMarkdownComponent.#fetchDocument(
+                    this.#documentInfo, accessToken);
+            },
+            refresh);
 
+        await this.#renderMarkdown(markdown);
+    }
+
+    async #renderMarkdown(markdown)
+    {
         const data = {
             editUrl: `https://github.com/${this.#documentInfo.owner}` +
                         `/${this.#documentInfo.repo}/edit` +

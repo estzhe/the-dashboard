@@ -29,17 +29,26 @@ export default class AsanaComponent extends BaseComponent
         this.#listId = listId;
     }
 
-    static get name() { return "asana"; }
-
-    async render()
+    async render(refresh)
     {
-        const accessToken = AsanaComponent.#getPersonalAccessToken(this.#accountName);
+        const tasks = await this._services.cache.get(
+            "tasks",
+            async() =>
+            {
+                const accessToken = AsanaComponent.#getPersonalAccessToken(this.#accountName);
+                return await AsanaComponent.#fetchTasks(this.#listId, accessToken);
+            },
+            refresh);
         
-        let tasks = await AsanaComponent.#fetchTasks(this.#listId, accessToken);
-        tasks =
-            tasks.filter(t => t.assignee_status === "today").concat(
-            tasks.filter(t => t.assignee_status === "inbox"));
-        tasks = tasks.map(task =>
+        await this.#renderData(tasks);
+    }
+
+    async #renderData(tasks)
+    {
+        tasks = [].concat(
+                    tasks.filter(t => t.assignee_status === "today"),
+                    tasks.filter(t => t.assignee_status === "inbox"))
+                .map(task =>
                 {
                     if (task.due_on)
                     {

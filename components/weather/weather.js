@@ -9,14 +9,24 @@ export default class WeatherComponent extends BaseComponent
         super(root, container);
     }
 
-    static get name() { return "weather"; }
-
-    async render()
+    async render(refresh)
     {
-        const apiKey = WeatherComponent.#getApiKey();
-        const location = await WeatherComponent.#getLocation();
-        const data = await WeatherComponent.#fetchWeatherData(location, apiKey);
+        const data = await this._services.cache.get(
+            "data",
+            async () =>
+            {
+                const apiKey = WeatherComponent.#getApiKey();
+                const location = await WeatherComponent.#getLocation();
+                return await WeatherComponent.#fetchWeatherData(location, apiKey);
+            },
+            refresh,
+        );
 
+        await this.#renderData(data);
+    }
+
+    async #renderData(data)
+    {
         for (const h of data.hourly)
         {
             const date = new Date(h.dt * 1000);
@@ -72,6 +82,13 @@ export default class WeatherComponent extends BaseComponent
                 },
             ]
         );
+    }
+
+    static async #fetchData()
+    {
+        const apiKey = WeatherComponent.#getApiKey();
+        const location = await WeatherComponent.#getLocation();
+        return await WeatherComponent.#fetchWeatherData(location, apiKey);
     }
 
     static async #fetchWeatherData(location, apiKey)

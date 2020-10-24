@@ -27,16 +27,26 @@ export default class GithubIssuesComponent extends BaseComponent
         this.#filter = filterString ? GithubIssuesComponent.#parseFilterString(filterString) : null;
     }
 
-    static get name() { return "github-issues"; }
-
-    async render()
+    async render(refresh)
     {
-        const accessToken = Github.getPersonalAccessToken(this.#accountName);
+        const issues = await this._services.cache.get(
+            "issues",
+            async () =>
+            {
+                const accessToken = Github.getPersonalAccessToken(this.#accountName);
 
-        let issues = await GithubIssuesComponent.#fetchIssues(
-            this.#repoInfo.owner,
-            this.#repoInfo.repo,
-            accessToken);
+                return await GithubIssuesComponent.#fetchIssues(
+                    this.#repoInfo.owner,
+                    this.#repoInfo.repo,
+                    accessToken);
+            },
+            refresh);
+        
+        await this.#renderIssues(issues);
+    }
+
+    async #renderIssues(issues)
+    {
         issues = GithubIssuesComponent.#filterIssues(issues, this.#filter);
         issues = issues.sort((i1, i2) => i2.updated_at.localeCompare(i1.updated_at));   // recent first
 

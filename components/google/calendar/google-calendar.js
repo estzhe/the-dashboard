@@ -43,48 +43,65 @@ export default class GoogleCalendarComponent extends BaseComponent
         this.#end = GoogleCalendarComponent.#parseDateAttribute(end, /* rounding */ "up");
     }
 
-    static get name() { return "google-calendar"; }
-
-    async render()
+    async render(refresh)
     {
-        const accessToken = await Google.getAccessToken(["https://www.googleapis.com/auth/calendar.readonly"]);
-
-        const calendars = await GoogleCalendarComponent.#fetchCalendars(this.#calendarsToDisplay, accessToken);
-        const colors = await GoogleCalendarComponent.#fetchColors(accessToken);
-
-        let events = await Promise.all(
-            calendars.map(async calendar =>
+        const calendarData = await this._services.cache.get(
+            "calendar-data",
+            async () =>
             {
-                const events = await GoogleCalendarComponent.#fetchEvents(
-                    calendar.id, this.#start, this.#end, accessToken);
+                const accessToken = await Google.getAccessToken(["https://www.googleapis.com/auth/calendar.readonly"]);
+                const emailAddress = await Google.getEmailAddress();
+
+                const calendars = await GoogleCalendarComponent.#fetchCalendars(this.#calendarsToDisplay, accessToken);
+                const colors = await GoogleCalendarComponent.#fetchColors(accessToken);
+
+                const eventsWithCalendars = await Promise.all(
+                    calendars.map(async calendar =>
+                    {
+                        const events = await GoogleCalendarComponent.#fetchEvents(
+                            calendar.id, this.#start, this.#end, accessToken);
+                        
+                        return { calendar, events };
+                    }));
                 
-                events.forEach(event =>
+                return { emailAddress, colors, eventsWithCalendars };
+            },
+            refresh);
+        
+        await this.#renderEvents(calendarData);
+    }
+
+    async #renderEvents(calendarData)
+    {
+        const { emailAddress, colors, eventsWithCalendars } = calendarData;
+
+        const events = eventsWithCalendars.map(ec =>
+            ec.events.map(event =>
+            {
+                event.calendar = ec.calendar;
+                event.color = colors.calendar[ec.calendar.colorId];
+
+                event.isFullDay = !!event.start.date;
+
+                if (event.isFullDay)
                 {
-                    event.calendar = calendar;
-                    event.color = colors.calendar[calendar.colorId];
+                    let parts = event.start.date.split(/\D/);
+                    parts[1]--; // month
+                    event.start = new Date(...parts);
 
-                    event.isFullDay = !!event.start.date;
+                    parts = event.end.date.split(/\D/);
+                    parts[1]--; // month
+                    event.end = new Date(...parts);
+                }
+                else
+                {
+                    event.start = new Date(Date.parse(event.start.dateTime));
+                    event.end = new Date(Date.parse(event.end.dateTime));
+                }
 
-                    if (event.isFullDay)
-                    {
-                        let parts = event.start.date.split(/\D/);
-                        parts[1]--; // month
-                        event.start = new Date(...parts);
-
-                        parts = event.end.date.split(/\D/);
-                        parts[1]--; // month
-                        event.end = new Date(...parts);
-                    }
-                    else
-                    {
-                        event.start = new Date(Date.parse(event.start.dateTime));
-                        event.end = new Date(Date.parse(event.end.dateTime));
-                    }
-                });
-
-                return events;
-            }));
-        events = events.flat();
+                return event;
+            }))
+            .flat();
 
         const eventsByDate = [];
         for (let date = this.#start.startOfDay(); date < this.#end; date = date.addDays(1))
@@ -125,7 +142,7 @@ export default class GoogleCalendarComponent extends BaseComponent
 
         const data = {
             title: this.#title,
-            emailAddress: await Google.getEmailAddress(),
+            emailAddress,
             eventsByDate,
         };
         

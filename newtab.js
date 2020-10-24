@@ -5,6 +5,8 @@ document.addEventListener("DOMContentLoaded", async () =>
     document.querySelector("div.components-container").innerHTML =
         localStorage.getItem("options.layout") ?? "";
 
+    let componentInstances = [];
+
     const componentContainers = document.body.querySelectorAll("div[component]");
     for (const container of componentContainers)
     {
@@ -22,6 +24,16 @@ document.addEventListener("DOMContentLoaded", async () =>
         container.classList.add(componentName, "component");
 
         const instance = new ComponentClass(componentRoot, container);
-        await instance.render();
+        componentInstances.push(instance);
     }
+    await Promise.all(
+        componentInstances.map(instance => instance.render(/* refresh */ false)));
+
+    document.querySelector(".refresh").addEventListener("click", async e =>
+    {
+        e.preventDefault();
+
+        await Promise.all(
+            componentInstances.map(instance => instance.render(/* refresh */ true)));
+    });
 });

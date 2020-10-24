@@ -1,8 +1,10 @@
-import Argument from '../lib/argument.js';
+import Argument from '/lib/argument.js';
+import ComponentCache from '/components/component-cache.js';
 
 export default class BaseComponent
 {
     #container;
+    #id;
     #root;
     #services;
 
@@ -15,28 +17,39 @@ export default class BaseComponent
 
         Argument.notNullOrUndefined(pathToComponent, "pathToComponent");
         Argument.notNullOrUndefined(container, "container");
+
+        const id = container.getAttribute("id");
+        if (!id)
+        {
+            throw new Error("Components must have a unique 'id' attribute.");
+        }
         
-        this.#root = pathToComponent;
         this.#container = container;
+        this.#id = id;
+        this.#root = pathToComponent;
         this.#services = Object.freeze({
-            storage: null,
+            storage: localStorage,
+            cache: new ComponentCache(id, localStorage),
         });
     }
 
-    static get name()
+    async render(refresh)
     {
-        throw new TypeError("'name' property must be implemented by child class.");
-    }
-
-    async render()
-    {
-        throw new TypeError("'render()' method must be implemented by child class.");
+        throw new TypeError("'render(refresh)' method must be implemented by child class.");
     }
 
     get _container() { return this.#container; }
 
+    get _id() { return this.#id; }
+
     get _root() { return this.#root };
 
+    /**
+     * @type {{
+     *      storage: {Storage},
+     *      cache: {ComponentCache}
+     * }}
+     */
     get _services() { return this.#services; }
 
     /**

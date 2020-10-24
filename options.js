@@ -21,7 +21,8 @@ document.addEventListener("DOMContentLoaded", () =>
 
     document.addEventListener("keydown", e =>
     {
-        if (e.ctrlKey && e.key === "s")
+        if (e.ctrlKey && e.key === "s" ||
+            e.ctrlKey && e.key == "Enter")
         {
             e.preventDefault();
             saveButton.click();
