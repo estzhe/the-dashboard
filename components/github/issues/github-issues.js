@@ -85,7 +85,7 @@ export default class GithubIssuesComponent extends BaseComponent
 
                 const data = {
                     issue,
-                    bodyHtml: marked(issue.body),
+                    bodyHtml: marked(issue.body, { breaks: true }),
                 };
 
                 elements.dialog.innerHTML = await this._template("issue-preview", data);
