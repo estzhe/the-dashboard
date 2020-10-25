@@ -102,7 +102,9 @@ export default class GithubIssuesComponent extends BaseComponent
         Argument.notNullOrUndefinedOrEmpty(accessToken, "accessToken");
         
         const response = await fetch(
-            `https://api.github.com/repos/${repoOwner}/${repoName}/issues`,
+            `https://api.github.com/repos/${repoOwner}/${repoName}/issues` +
+                `?state=open` +
+                `&per_page=100`,
             {
                 headers: {
                     "Accept": "application/vnd.github.v3.raw+json",

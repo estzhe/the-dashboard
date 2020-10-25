@@ -15,6 +15,21 @@ document.addEventListener("DOMContentLoaded", async () =>
         e.preventDefault();
         await refreshComponents(instances);
     });
+
+    document.addEventListener("keydown", e =>
+    {
+        const tag = e.target.tagName.toLowerCase();
+        if (tag === "textarea" || tag == "input")
+        {
+            return;
+        }
+
+        if (e.key == "o")
+        {
+            e.preventDefault();
+            chrome.tabs.update({ url: "options.html" });
+        }
+    });
 });
 
 async function createComponents(containers)

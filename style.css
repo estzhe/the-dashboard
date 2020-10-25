@@ -28,6 +28,44 @@ a:hover
     text-decoration: underline;
 }
 
+table
+{
+    border-collapse: collapse;
+    margin: 0;
+    padding: 0;
+    table-layout: fixed;
+}
+
+table tr
+{
+    border-bottom: 1px solid #ddd;
+}
+
+table tr:last-of-type
+{
+    border-bottom: none;
+}
+
+table th,
+table td
+{
+    padding: 0.3rem .5rem;
+}
+
+table th
+{
+    text-align: center;
+}
+
+/*
+    marked's markdown implementation does not support header-less tables.
+    But it supports empty headers. This hides them.
+*/
+th:empty
+{
+    visibility: hidden;
+}
+
 .center { text-align: center; }
 .right { text-align: right; }
 
@@ -47,7 +85,7 @@ a:hover
         margin: 0;
         display: flex;
         flex-wrap: wrap;
-        justify-content: flex-start;
+        align-content: flex-start;
     }
 
     .components-container .card
@@ -56,6 +94,21 @@ a:hover
         margin: 1rem;
         font-size: 0.8125rem;
         overflow: auto;
+    }
+
+    .components-container .card::-webkit-scrollbar-track
+    {
+        background-color: #ffffff;
+    }
+
+    .components-container .card::-webkit-scrollbar
+    {
+        width: 3px;
+    }
+
+    .components-container .card::-webkit-scrollbar-thumb
+    {
+        background-color: lightgray;
     }
 
         .components-container .card h1
@@ -112,29 +165,3 @@ a:hover
                 flex: 1 0;
                 margin-right: 0.2rem;
             }
-
-
-table
-{
-    border: 1px solid #ccc;
-    border-collapse: collapse;
-    margin: 0;
-    padding: 0;
-    table-layout: fixed;
-}
-
-table tr
-{
-    border: 1px solid #ddd;
-}
-
-table th,
-table td
-{
-    padding: 0.3rem .5rem;
-}
-
-table th
-{
-    text-align: center;
-}

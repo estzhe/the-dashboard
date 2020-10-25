@@ -19,7 +19,7 @@ export default class MarkdownTextComponent extends BaseComponent
 
     async render()
     {
-        const html = marked(this.#loadText() ?? "");
+        const html = markdownToHtml(this.#loadText() ?? "");
         this._container.innerHTML = await this._template("template", html);
 
         const elements = {
@@ -40,7 +40,7 @@ export default class MarkdownTextComponent extends BaseComponent
             const text = this.#loadText() ?? "";
 
             elements.textarea.value = text;
-            elements.preview.innerHTML = marked(text);
+            elements.preview.innerHTML = markdownToHtml(text);
 
             elements.editorDialog.showModal();
             elements.textarea.focus();
@@ -52,7 +52,7 @@ export default class MarkdownTextComponent extends BaseComponent
 
             this.#saveText(newText);
 
-            elements.text.innerHTML = marked(newText);
+            elements.text.innerHTML = markdownToHtml(newText);
             elements.editorDialog.close();
         });
 
@@ -63,7 +63,7 @@ export default class MarkdownTextComponent extends BaseComponent
 
         elements.textarea.addEventListener("input", e =>
         {
-            elements.preview.innerHTML = marked(e.target.value);
+            elements.preview.innerHTML = markdownToHtml(e.target.value);
         });
 
         elements.editorDialog.addEventListener("keydown", e =>
@@ -86,4 +86,9 @@ export default class MarkdownTextComponent extends BaseComponent
     {
         this._services.storage.setItem(`markdown-text.text.${this.#id}`, value);
     }
+}
+
+function markdownToHtml(markdown)
+{
+    return marked(markdown, { breaks: true });
 }
