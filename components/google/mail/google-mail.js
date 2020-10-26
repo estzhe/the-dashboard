@@ -56,7 +56,7 @@ export default class GoogleMailComponent extends BaseComponent
                 }
             })
             .then(_ => _.json())
-            .then(_ => _.threads);
+            .then(_ => _.threads) ?? [];
 
         const threadDetails = await Promise.all(
             threads.map(thread =>
