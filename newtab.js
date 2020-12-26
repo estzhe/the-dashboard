@@ -29,6 +29,11 @@ document.addEventListener("DOMContentLoaded", async () =>
             e.preventDefault();
             chrome.tabs.update({ url: "options.html" });
         }
+        else if (e.key == "r")
+        {
+            e.preventDefault();
+            document.querySelector(".refresh").click();
+        }
     });
 });
 
