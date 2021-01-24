@@ -1,11 +1,8 @@
 {{#if title}}
-    <h1>{{title}}</h1>
+    <a href="https://mail.google.com/mail/?authuser={{emailAddress}}#inbox" class="anchor-header">
+        <h1>{{title}}</h1>
+    </a>
 {{/if}}
-
-<a class="card-action material-icons"
-   href="https://mail.google.com/mail/?authuser={{emailAddress}}#inbox">
-    launch
-</a>
 
 {{#each threads}}
     <a class="item"

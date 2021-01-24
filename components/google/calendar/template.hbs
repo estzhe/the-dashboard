@@ -1,11 +1,8 @@
 {{#if title}}
-    <h1>{{title}}</h1>
+    <a href="https://calendar.google.com/calendar/?authuser={{emailAddress}}" class="anchor-header">
+        <h1>{{title}}</h1>
+    </a>
 {{/if}}
-
-<a class="card-action material-icons"
-   href="https://calendar.google.com/calendar/?authuser={{emailAddress}}">
-    launch
-</a>
 
 {{#each eventsByDate}}
     <h2>{{date-wordy date}}</h2>

@@ -1,9 +1,8 @@
 {{#if title}}
-    <h1>{{title}}</h1>
+    <a href="https://app.asana.com/0/{{listId}}/list" class="anchor-header">
+        <h1>{{title}}</h1>
+    </a>
 {{/if}}
-
-<a class="card-action material-icons"
-    href="https://app.asana.com/0/{{listId}}/list">launch</a>
 
 {{#each tasks}}
     <a class="item"

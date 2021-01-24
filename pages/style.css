@@ -28,6 +28,17 @@ a:hover
     text-decoration: underline;
 }
 
+a.anchor-header
+{
+    color: initial;
+    text-decoration: none;
+}
+
+a.anchor-header:hover
+{
+    color: gray;
+}
+
 table
 {
     border-collapse: collapse;

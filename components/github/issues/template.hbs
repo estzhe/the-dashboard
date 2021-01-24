@@ -1,10 +1,8 @@
 {{#if title}}
-    <h1>{{title}}</h1>
+    <a href="{{url}}" class="anchor-header">
+        <h1>{{title}}</h1>
+    </a>
 {{/if}}
-
-<a class="card-action material-icons" href="{{url}}">
-    launch
-</a>
 
 {{#each issues}}
     <a class="item" href="{{{html_url}}}" data-issue-id="{{id}}">
