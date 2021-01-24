@@ -57,11 +57,28 @@ export default class Dashboard
         Argument.notNullOrUndefined(targetContainer, "targetContainer");
 
         const components = await this.#componentsLazy.getValue();
+        const layout = this.getLayout();
 
-        targetContainer.innerHTML = this.getLayout();
+        // If the dashboard has already been rendered in targetContainer,
+        // we ideally want to avoid full re-rendering, because during full
+        // re-rendering elements will jump around, which is not very pleasant.
+        const newLayoutHashCode = Dashboard.#getHashCode(layout).toString();
+        const oldLayoutHashCode = targetContainer.dataset.layoutHash;
+        const needsFullRender = newLayoutHashCode !== oldLayoutHashCode;
+
+        if (needsFullRender)
+        {
+            targetContainer.innerHTML = layout;
+            targetContainer.dataset.layoutHash = newLayoutHashCode;
+        }
+
         await Promise.all(components.map(
             component =>
             {
+                // TODO: Not good, this needs to be part of component or layout logic.
+                //       In future: each component should be split into two parts:
+                //       view and data source. View would be coupled with container,
+                //       while data source would be responsible for fetching data.
                 const container = targetContainer.querySelector(`[id='${component.id}']`);
                 return component.render(container, refreshData);
             }
@@ -94,5 +111,24 @@ export default class Dashboard
         }
 
         return components;
+    }
+
+    /**
+     * @param {string} value
+     * @returns {int}
+     *
+     * @see https://werxltd.com/wp/2010/05/13/javascript-implementation-of-javas-string-hashcode-method/
+     */
+    static #getHashCode(value)
+    {
+        let hash = 0;
+
+        for (let i = 0; i < value.length; ++i)
+        {
+            hash = ((hash << 5) - hash) + value.charCodeAt(i);
+            hash |= 0; // convert to 32bit integer
+        }
+
+        return hash;
     }
 }
