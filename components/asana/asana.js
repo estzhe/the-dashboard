@@ -8,42 +8,40 @@ export default class AsanaComponent extends BaseComponent
     #accountName;
     #listId;
 
-    constructor(root, container)
+    constructor(pathToComponent, options)
     {
-        super(root, container);
+        super(pathToComponent, options);
 
-        const accountName = container.getAttribute("account");
-        if (!accountName)
+        if (!options.account)
         {
             throw new Error("asana: 'account' attribute is required.");
         }
 
-        const listId = container.getAttribute("list-id");
-        if (!listId)
+        if (!options.listId)
         {
             throw new Error("asana: 'list-id' attribute is required.");
         }
 
-        this.#title = container.getAttribute("title");
-        this.#accountName = accountName;
-        this.#listId = listId;
+        this.#title = options.title;
+        this.#accountName = options.account;
+        this.#listId = options.listId;
     }
 
-    async render(refresh)
+    async render(container, refreshData)
     {
-        const tasks = await this._services.cache.get(
-            "tasks",
-            async() =>
-            {
-                const accessToken = AsanaComponent.#getPersonalAccessToken(this.#accountName);
-                return await AsanaComponent.#fetchTasks(this.#listId, accessToken);
-            },
-            refresh);
-        
-        await this.#renderData(tasks);
+        await super.render(container, refreshData);
+
+        const tasks = await this.#getTasks(refreshData);
+        await this.#renderTasks(container, tasks);
     }
 
-    async #renderData(tasks)
+    async refreshData()
+    {
+        await super.refreshData();
+        await this.#getTasks(/* refreshData */ true);
+    }
+
+    async #renderTasks(container, tasks)
     {
         tasks = [].concat(
                     tasks.filter(t => t.assignee_status === "today"),
@@ -71,7 +69,19 @@ export default class AsanaComponent extends BaseComponent
             tasks,
         };
 
-        this._container.innerHTML = await this._template("template", data);
+        container.innerHTML = await this._template("template", data);
+    }
+
+    async #getTasks(refreshData)
+    {
+        return await this._services.cache.get(
+            "tasks",
+            async() =>
+            {
+                const accessToken = AsanaComponent.#getPersonalAccessToken(this.#accountName);
+                return await AsanaComponent.#fetchTasks(this.#listId, accessToken);
+            },
+            refreshData);
     }
 
     static async #fetchTasks(listId, accessToken)

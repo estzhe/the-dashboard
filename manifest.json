@@ -9,8 +9,12 @@
     ],
 
     "chrome_url_overrides": {
-        "newtab": "newtab.html"
+        "newtab": "pages/newtab.html"
     },
+
+    "web_accessible_resources": [
+        "components/*"
+    ],
 
     "oauth2": {
         "client_id": "42850195340-5tsm81faq0opnjo8pibkdse6ha3c2p7m.apps.googleusercontent.com",

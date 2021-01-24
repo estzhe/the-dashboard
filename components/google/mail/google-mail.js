@@ -6,16 +6,41 @@ export default class GoogleMailComponent extends BaseComponent
 {
     #title;
 
-    constructor(root, container)
+    constructor(pathToComponent, options)
     {
-        super(root, container);
+        super(pathToComponent, options);
 
-        this.#title = container.getAttribute("title");
+        this.#title = options.title;
     }
 
-    async render(refresh)
+    async render(container, refreshData)
     {
-        const { emailAddress, threads } = await this._services.cache.get(
+        await super.render(container, refreshData);
+
+        const { emailAddress, threads } = await this.#getThreadsAndEmailAddress(refreshData);
+        await this.#renderEmails(container, emailAddress, threads);
+    }
+
+    async refreshData()
+    {
+        await super.refreshData();
+        await this.#getThreadsAndEmailAddress(/* refreshData */ true);
+    }
+
+    async #renderEmails(container, emailAddress, threads)
+    {
+        const data = {
+            title: this.#title,
+            emailAddress,
+            threads,
+        };
+        
+        container.innerHTML = await this._template("template", data);
+    }
+
+    async #getThreadsAndEmailAddress(refreshData)
+    {
+        return await this._services.cache.get(
             "emails",
             async () =>
             {
@@ -26,20 +51,7 @@ export default class GoogleMailComponent extends BaseComponent
 
                 return { emailAddress, threads };
             },
-            refresh);
-
-        await this.#renderEmails(emailAddress, threads);
-    }
-
-    async #renderEmails(emailAddress, threads)
-    {
-        const data = {
-            title: this.#title,
-            emailAddress,
-            threads,
-        };
-        
-        this._container.innerHTML = await this._template("template", data);
+            refreshData);
     }
 
     static async #fetchThreads(accessToken)

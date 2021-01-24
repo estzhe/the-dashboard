@@ -4,29 +4,30 @@ import WeatherGraphics from '/components/weather/weather-graphics.js';
 
 export default class WeatherComponent extends BaseComponent
 {
-    constructor(root, container)
+    constructor(pathToComponent, options)
     {
-        super(root, container);
+        super(pathToComponent, options);
     }
 
-    async render(refresh)
+    async render(container, refreshData)
     {
-        const data = await this._services.cache.get(
-            "data",
-            async () =>
-            {
-                const apiKey = WeatherComponent.#getApiKey();
-                const location = await WeatherComponent.#getLocation();
-                return await WeatherComponent.#fetchWeatherData(location, apiKey);
-            },
-            refresh,
-        );
+        await super.render(container, refreshData);
 
-        await this.#renderData(data);
+        const data = await this.#getData(refreshData);
+        await this.#renderData(container, data);
     }
 
-    async #renderData(data)
+    async refreshData()
     {
+        await super.refreshData();
+        await this.#getData(/* refreshData */ true);
+    }
+
+    async #renderData(container, data)
+    {
+        Argument.notNullOrUndefined(container, "container");
+        Argument.notNullOrUndefined(data, "data");
+
         for (const h of data.hourly)
         {
             const date = new Date(h.dt * 1000);
@@ -35,12 +36,12 @@ export default class WeatherComponent extends BaseComponent
                 : "";
         }
 
-        this._container.innerHTML = await this._template("template", data);
+        container.innerHTML = await this._template("template", data);
 
         const elements = {
-            temperatureCanvas: this._container.querySelector(".temperature"),
-            cloudsCanvas: this._container.querySelector(".clouds"),
-            rainAndSnowCanvas: this._container.querySelector(".rain-and-snow"),
+            temperatureCanvas: container.querySelector(".temperature"),
+            cloudsCanvas: container.querySelector(".clouds"),
+            rainAndSnowCanvas: container.querySelector(".rain-and-snow"),
         };
 
         elements.temperatureCanvas.width = window.innerWidth;
@@ -82,6 +83,19 @@ export default class WeatherComponent extends BaseComponent
                 },
             ]
         );
+    }
+
+    async #getData(refreshData)
+    {
+        return await this._services.cache.get(
+            "data",
+            async () =>
+            {
+                const apiKey = WeatherComponent.#getApiKey();
+                const location = await WeatherComponent.#getLocation();
+                return await WeatherComponent.#fetchWeatherData(location, apiKey);
+            },
+            refreshData);
     }
 
     static async #fetchData()

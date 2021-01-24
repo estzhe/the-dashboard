@@ -9,43 +9,36 @@ export default class GithubIssuesComponent extends BaseComponent
     #title;
     #filter;
 
-    constructor(root, container)
+    constructor(pathToComponent, options)
     {
-        super(root, container);
+        super(pathToComponent, options);
 
-        const accountName = container.getAttribute("account");
-        const repo = container.getAttribute("repo");
-        if (!repo)
+        if (!options.repo)
         {
             throw new Error("github-issues: 'repo' attribute is required.");
         }
-        const filterString = container.getAttribute("filter");
-
-        this.#accountName = accountName;
-        this.#repoInfo = GithubIssuesComponent.#parseRepoUri(repo);
-        this.#title = container.getAttribute("title");
-        this.#filter = filterString ? GithubIssuesComponent.#parseFilterString(filterString) : null;
-    }
-
-    async render(refresh)
-    {
-        const issues = await this._services.cache.get(
-            "issues",
-            async () =>
-            {
-                const accessToken = Github.getPersonalAccessToken(this.#accountName);
-
-                return await GithubIssuesComponent.#fetchIssues(
-                    this.#repoInfo.owner,
-                    this.#repoInfo.repo,
-                    accessToken);
-            },
-            refresh);
         
-        await this.#renderIssues(issues);
+        this.#accountName = options.account;
+        this.#repoInfo = GithubIssuesComponent.#parseRepoUri(options.repo);
+        this.#title = options.title;
+        this.#filter = options.filter ? GithubIssuesComponent.#parseFilterString(options.filter) : null;
     }
 
-    async #renderIssues(issues)
+    async render(container, refreshData)
+    {
+        await super.render(container, refreshData);
+
+        const issues = await this.#getIssues(refreshData);
+        await this.#renderIssues(container, issues);
+    }
+
+    async refreshData()
+    {
+        await super.refreshData();
+        await this.#getIssues(/* refreshData */ true);
+    }
+
+    async #renderIssues(container, issues)
     {
         issues = GithubIssuesComponent.#filterIssues(issues, this.#filter);
         issues = issues.sort((i1, i2) => i2.updated_at.localeCompare(i1.updated_at));   // recent first
@@ -56,11 +49,11 @@ export default class GithubIssuesComponent extends BaseComponent
             issues,
         };
 
-        this._container.innerHTML = await this._template("template", data);
+        container.innerHTML = await this._template("template", data);
 
         const elements = {
-            dialog: this._container.querySelector("dialog.issue-viewer"),
-            items: this._container.querySelectorAll(".item"),
+            dialog: container.querySelector("dialog.issue-viewer"),
+            items: container.querySelectorAll(".item"),
         };
 
         elements.dialog.addEventListener("keydown", e =>
@@ -72,7 +65,7 @@ export default class GithubIssuesComponent extends BaseComponent
             }
         });
 
-        for (const item of this._container.querySelectorAll(".item"))
+        for (const item of container.querySelectorAll(".item"))
         {
             item.addEventListener("click", async e =>
             {
@@ -93,6 +86,22 @@ export default class GithubIssuesComponent extends BaseComponent
                 elements.dialog.showModal();
             });
         }
+    }
+
+    async #getIssues(refreshData)
+    {
+        return await this._services.cache.get(
+            "issues",
+            async () =>
+            {
+                const accessToken = Github.getPersonalAccessToken(this.#accountName);
+
+                return await GithubIssuesComponent.#fetchIssues(
+                    this.#repoInfo.owner,
+                    this.#repoInfo.repo,
+                    accessToken);
+            },
+            refreshData);
     }
 
     static async #fetchIssues(repoOwner, repoName, accessToken)

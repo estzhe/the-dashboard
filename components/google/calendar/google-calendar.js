@@ -10,73 +10,59 @@ export default class GoogleCalendarComponent extends BaseComponent
     #start;
     #end;
 
-    constructor(root, container)
+    constructor(pathToComponent, options)
     {
-        super(root, container);
+        super(pathToComponent, options);
         
-        const calendars = container.getAttribute("calendars");
-        if (!calendars)
+        if (!options.calendars)
         {
             throw new Error("google-calendar: 'calendars' attribute is required.");
         }
         
-        const start = container.getAttribute("start");
-        if (!start)
+        if (!options.start)
         {
             throw new Error("google-calendar: 'start' attribute is required.");
         }
 
-        const end = container.getAttribute("end");
-        if (!end)
+        if (!options.end)
         {
             throw new Error("google-calendar: 'end' attribute is required.");
         }
+
+        const start = GoogleCalendarComponent.#parseDateAttribute(options.start, /* rounding */ "down");;
+        const end = GoogleCalendarComponent.#parseDateAttribute(options.end, /* rounding */ "up");
 
         if (start >= end)
         {
             throw new Error("google-calendar: 'start' should be earlier than 'end'.");
         }
 
-        this.#title = container.getAttribute("title");
-        this.#calendarsToDisplay = GoogleCalendarComponent.#parseCalendarListAttribute(calendars);
-        this.#start = GoogleCalendarComponent.#parseDateAttribute(start, /* rounding */ "down");
-        this.#end = GoogleCalendarComponent.#parseDateAttribute(end, /* rounding */ "up");
+        this.#title = options.title;
+        this.#calendarsToDisplay = GoogleCalendarComponent.#parseCalendarListAttribute(options.calendars);
+        this.#start = start;
+        this.#end = end;
     }
 
-    async render(refresh)
+    async render(container, refreshData)
     {
-        const calendarData = await this._services.cache.get(
-            "calendar-data",
-            async () =>
-            {
-                const accessToken = await Google.getAccessToken(["https://www.googleapis.com/auth/calendar.readonly"]);
-                const emailAddress = await Google.getEmailAddress();
+        await super.render(container, refreshData);
 
-                const calendars = await GoogleCalendarComponent.#fetchCalendars(this.#calendarsToDisplay, accessToken);
-                const colors = await GoogleCalendarComponent.#fetchColors(accessToken);
-
-                const eventsWithCalendars = await Promise.all(
-                    calendars.map(async calendar =>
-                    {
-                        const events = await GoogleCalendarComponent.#fetchEvents(
-                            calendar.id, this.#start, this.#end, accessToken);
-                        
-                        return { calendar, events };
-                    }));
-                
-                return { emailAddress, colors, eventsWithCalendars };
-            },
-            refresh);
-        
-        await this.#renderEvents(calendarData);
+        const calendarData = await this.#getEvents(refreshData);
+        await this.#renderEvents(container, calendarData);
     }
 
-    async #renderEvents(calendarData)
+    async refreshData()
+    {
+        await super.refreshData();
+        await this.#getEvents(/* refreshData */ true);
+    }
+
+    async #renderEvents(container, calendarData)
     {
         const { emailAddress, colors, eventsWithCalendars } = calendarData;
 
         const events = eventsWithCalendars.map(ec =>
-            ec.events.map(event =>
+            (ec.events ?? []).map(event =>
             {
                 event.calendar = ec.calendar;
                 event.color = colors.calendar[ec.calendar.colorId];
@@ -146,7 +132,33 @@ export default class GoogleCalendarComponent extends BaseComponent
             eventsByDate,
         };
         
-        this._container.innerHTML = await this._template("template", data);
+        container.innerHTML = await this._template("template", data);
+    }
+
+    async #getEvents(refreshData)
+    {
+        return await this._services.cache.get(
+            "calendar-data",
+            async () =>
+            {
+                const accessToken = await Google.getAccessToken(["https://www.googleapis.com/auth/calendar.readonly"]);
+                const emailAddress = await Google.getEmailAddress();
+
+                const calendars = await GoogleCalendarComponent.#fetchCalendars(this.#calendarsToDisplay, accessToken);
+                const colors = await GoogleCalendarComponent.#fetchColors(accessToken);
+
+                const eventsWithCalendars = await Promise.all(
+                    calendars.map(async calendar =>
+                    {
+                        const events = await GoogleCalendarComponent.#fetchEvents(
+                            calendar.id, this.#start, this.#end, accessToken);
+                        
+                        return { calendar, events };
+                    }));
+                
+                return { emailAddress, colors, eventsWithCalendars };
+            },
+            refreshData);
     }
 
     static async #fetchEvents(calendarId, start, end, accessToken)
@@ -157,7 +169,7 @@ export default class GoogleCalendarComponent extends BaseComponent
         Argument.notNullOrUndefinedOrEmpty(accessToken, "accessToken");
 
         const response = await fetch(
-            `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events` +
+            `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events` +
                 `?singleEvents=true` +
                 `&timeMin=${start.toISOString()}` +
                 `&timeMax=${end.toISOString()}`,

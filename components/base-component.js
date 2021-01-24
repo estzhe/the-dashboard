@@ -1,14 +1,31 @@
 import Argument from '/lib/argument.js';
-import ComponentCache from '/components/component-cache.js';
+import ReadCache from '/lib/read-cache.js';
 
 export default class BaseComponent
 {
-    #container;
+    /**
+     * @type {string}
+     */
     #id;
-    #root;
+
+    /**
+     * @type {string}
+     */
+    #pathToComponent;
+
+    /**
+     * @type {{
+     *      storage: {Storage},
+     *      cache: {ReadCache},
+     * }}
+     */
     #services;
 
-    constructor(pathToComponent, container)
+    /**
+     * @param {string} pathToComponent 
+     * @param {object} options 
+     */
+    constructor(pathToComponent, options)
     {
         if (new.target === "BaseComponent")
         {
@@ -16,38 +33,54 @@ export default class BaseComponent
         }
 
         Argument.notNullOrUndefined(pathToComponent, "pathToComponent");
-        Argument.notNullOrUndefined(container, "container");
+        Argument.notNullOrUndefined(options, "options");
 
-        const id = container.getAttribute("id");
-        if (!id)
+        if (!options.id)
         {
-            throw new Error("Components must have a unique 'id' attribute.");
+            throw new Error("Component options must have a unique 'id' property.");
         }
         
-        this.#container = container;
-        this.#id = id;
-        this.#root = pathToComponent;
+        this.#id = options.id;
+        this.#pathToComponent = pathToComponent;
         this.#services = Object.freeze({
             storage: localStorage,
-            cache: new ComponentCache(id, localStorage),
+            cache: new ReadCache(options.id, localStorage),
         });
     }
 
-    async render(refresh)
+    /**
+     * @param {HTMLElement} container 
+     * @param {boolean} refreshData 
+     * 
+     * @returns {Promise}
+     */
+    async render(container, refreshData)
     {
-        throw new TypeError("'render(refresh)' method must be implemented by child class.");
+        Argument.notNullOrUndefined(container, "container");
+        container.classList.add("component");
     }
 
-    get _container() { return this.#container; }
+    /**
+     * @returns {Promise}
+     */
+    async refreshData()
+    {
+    }
+    
+    /**
+     * @type {string}
+     */
+    get id() { return this.#id; }
 
-    get _id() { return this.#id; }
-
-    get _root() { return this.#root };
+    /**
+     * @type {string}
+     */
+    get _pathToComponent() { return this.#pathToComponent };
 
     /**
      * @type {{
      *      storage: {Storage},
-     *      cache: {ComponentCache}
+     *      cache: {ReadCache},
      * }}
      */
     get _services() { return this.#services; }
@@ -62,7 +95,7 @@ export default class BaseComponent
     {
         Argument.notNullOrUndefinedOrEmpty(name, "name");
 
-        const request = await fetch(`${this._root}/${name}.hbs`);
+        const request = await fetch(`${this._pathToComponent}/${name}.hbs`);
 
         const templateText = await request.text();
         const template = Handlebars.compile(templateText);

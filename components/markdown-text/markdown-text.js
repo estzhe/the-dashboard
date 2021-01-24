@@ -4,33 +4,34 @@ export default class MarkdownTextComponent extends BaseComponent
 {
     #id;
 
-    constructor(root, container)
+    constructor(pathToComponent, options)
     {
-        super(root, container);
+        super(pathToComponent, options);
 
-        const id = container.getAttribute("id");
-        if (!id)
+        if (!options.id)
         {
             throw new Error("markdown-text: 'id' attribute is required.");
         }
 
-        this.#id = id;
+        this.#id = options.id;
     }
 
-    async render()
+    async render(container, refreshData)
     {
+        await super.render(container, refreshData);
+
         const html = markdownToHtml(this.#loadText() ?? "");
-        this._container.innerHTML = await this._template("template", html);
+        container.innerHTML = await this._template("template", html);
 
         const elements = {
-            container: this._container,
-            text: this._container.querySelector("div.text"),
-            editButton: this._container.querySelector(".edit"),
-            saveButton: this._container.querySelector(".save"),
-            cancelButton: this._container.querySelector(".cancel"),
-            textarea: this._container.querySelector("textarea"),
-            preview: this._container.querySelector("div.preview"),
-            editorDialog: this._container.querySelector("dialog.editor")
+            container: container,
+            text: container.querySelector("div.text"),
+            editButton: container.querySelector(".edit"),
+            saveButton: container.querySelector(".save"),
+            cancelButton: container.querySelector(".cancel"),
+            textarea: container.querySelector("textarea"),
+            preview: container.querySelector("div.preview"),
+            editorDialog: container.querySelector("dialog.editor")
         };
 
         elements.editButton.addEventListener("click", e =>

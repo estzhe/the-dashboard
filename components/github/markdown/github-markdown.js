@@ -7,38 +7,34 @@ export default class GithubMarkdownComponent extends BaseComponent
     #accountName;
     #documentInfo;
 
-    constructor(root, container)
+    constructor(pathToComponent, options)
     {
-        super(root, container);
+        super(pathToComponent, options);
 
-        const accountName = container.getAttribute("account");
-        const documentUri = container.getAttribute("uri");
-        if (!documentUri)
+        if (!options.uri)
         {
             throw new Error("github-markdown: 'uri' attribute is required.");
         }
 
-        this.#accountName = accountName;
-        this.#documentInfo = GithubMarkdownComponent.#parseDocumentUri(documentUri);
+        this.#accountName = options.account;
+        this.#documentInfo = GithubMarkdownComponent.#parseDocumentUri(options.uri);
     }
 
-    async render(refresh)
+    async render(container, refreshData)
     {
-        const markdown = await this._services.cache.get(
-            "markdown",
-            async () =>
-            {
-                const accessToken = Github.getPersonalAccessToken(this.#accountName);
+        await super.render(container, refreshData);
 
-                return await GithubMarkdownComponent.#fetchDocument(
-                    this.#documentInfo, accessToken);
-            },
-            refresh);
-
-        await this.#renderMarkdown(markdown);
+        const markdown = await this.#getDocument(refreshData);
+        await this.#renderMarkdown(container, markdown);
     }
 
-    async #renderMarkdown(markdown)
+    async refreshData()
+    {
+        await super.refreshData();
+        await this.#getDocument(/* refreshData */ true);
+    }
+
+    async #renderMarkdown(container, markdown)
     {
         const data = {
             editUrl: `https://github.com/${this.#documentInfo.owner}` +
@@ -48,7 +44,21 @@ export default class GithubMarkdownComponent extends BaseComponent
             html: marked(markdown),
         };
         
-        this._container.innerHTML = await this._template("template", data);
+        container.innerHTML = await this._template("template", data);
+    }
+
+    async #getDocument(refreshData)
+    {
+        return await this._services.cache.get(
+            "markdown",
+            async () =>
+            {
+                const accessToken = Github.getPersonalAccessToken(this.#accountName);
+
+                return await GithubMarkdownComponent.#fetchDocument(
+                    this.#documentInfo, accessToken);
+            },
+            refreshData);
     }
 
     static async #fetchDocument(documentInfo, accessToken)
