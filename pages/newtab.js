@@ -41,7 +41,7 @@ function onKeyDown(e)
         e.preventDefault();
         chrome.tabs.update({ url: "pages/options.html" });
     }
-    else if (e.key == "r")
+    else if (e.key == "r" && !e.ctrlKey && !e.altKey)
     {
         e.preventDefault();
         elements.refreshButton.click();

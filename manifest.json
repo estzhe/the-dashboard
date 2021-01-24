@@ -5,7 +5,8 @@
 
     "permissions": [
         "identity",
-        "geolocation"
+        "geolocation",
+        "alarms"
     ],
 
     "chrome_url_overrides": {
@@ -15,6 +16,11 @@
     "web_accessible_resources": [
         "components/*"
     ],
+
+    "background": {
+        "page": "pages/background.html",
+        "persistent": false
+    },
 
     "oauth2": {
         "client_id": "42850195340-5tsm81faq0opnjo8pibkdse6ha3c2p7m.apps.googleusercontent.com",
