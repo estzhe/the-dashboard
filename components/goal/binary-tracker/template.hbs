@@ -1,0 +1,30 @@
+{{#if title}}
+    <h1>{{title}}</h1>
+{{/if}}
+
+<div style="display: flex; text-align: left;">
+    <div class="current-value" style="font-size: 200%; cursor: pointer; flex: 1;">
+        {{#if currentCalculatedValue}}
+            {{currentCalculatedValue}}
+        {{else}}
+            ?
+        {{/if}}
+    </div>
+
+    <div style="flex: 1;">
+        {{#if currentCalculatedBasis}}
+            {{currentCalculatedBasis.successCount}} / {{currentCalculatedBasis.daysAttempted}}
+        {{/if}}
+    </div>
+
+    <div class="todays-entry" style="flex: 1;">
+        {{#if needTodaysEntry}}
+            Today: <a href="" class="yes">yes</a> <a href="" class="no">no</a>
+        {{/if}}
+    </div>
+</div>
+
+<div class="chart"></div>
+
+<dialog class="history-editor" style="width: 70%; height: 75%; overflow: auto;">
+</dialog>

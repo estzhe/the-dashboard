@@ -1,0 +1,14 @@
+<table class="editable-elements-container">
+    <tbody>
+        {{#each items}}
+            <tr>
+                <td>
+                    {{date-wordy date}}
+                </td>
+                <td>
+                    <input type="checkbox" {{#if value}}checked{{/if}} data-date="{{date}}" class="editable-element" />
+                </td>
+            </tr>
+        {{/each}}
+    </tbody>
+</table>

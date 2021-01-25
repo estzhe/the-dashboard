@@ -82,7 +82,6 @@ export default class GithubIssuesComponent extends BaseComponent
                 };
 
                 elements.dialog.innerHTML = await this._template("issue-preview", data);
-
                 elements.dialog.showModal();
             });
         }
