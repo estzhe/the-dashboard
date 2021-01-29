@@ -6,7 +6,7 @@
                     {{date-wordy date}}
                 </td>
                 <td>
-                    <input type="checkbox" {{#if value}}checked{{/if}} data-date="{{date}}" class="editable-element" />
+                    <input type="number" {{#if value}}value="{{value}}"{{/if}} data-date="{{date}}" class="editable-element" />
                 </td>
             </tr>
         {{/each}}

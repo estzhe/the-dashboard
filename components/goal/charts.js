@@ -117,10 +117,12 @@ export default class Charts
         }
         
         series.setData(
-            data.map(entry => ({
-                time: Charts.#serializeDateForChart(entry.date),
-                value: entry.value,
-            }))
+            [...data]
+                .sort((a, b) => a.date > b.date ? 1 : a.date < b.date ? -1 : 0)
+                .map(entry => ({
+                    time: Charts.#serializeDateForChart(entry.date),
+                    value: entry.value,
+                }))
         );
 
         chart.timeScale().setVisibleLogicalRange({from: 0, to: xWidthInDataPoints});
@@ -181,7 +183,7 @@ export default class Charts
 
             tooltip.innerHTML = `
                 <div style='margin: 1px 0px;'>
-                    ${value}
+                    ${value}&nbsp;
                 </div>
                 <div style='font-size: smaller;'>
                     ${date.toWordyDateString()}

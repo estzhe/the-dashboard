@@ -26,8 +26,6 @@ export default class GoalBinaryTrackerComponent extends BaseComponent
     {
         super(pathToComponent, options);
 
-        console.log(options);
-
         if (!options.yMin)
         {
             throw new Error("goal/binary-tracker: 'yMin' attribute is required.");
@@ -69,22 +67,27 @@ export default class GoalBinaryTrackerComponent extends BaseComponent
     {
         await super.render(container, refreshData);
 
-        const hasValueForToday = this.#store.getValue(Date.today()) !== undefined;
+        const hasEntryForToday = this.#store.getValue(Date.today()) !== undefined;
 
-        const calculatedValues = this.#getCalculatedValues(
+        const calculatedEntries = this.#getCalculatedEntries(
             /* startDate */ Date.today().addDays(-(this.#visibleWindowDays - 1)),
-            /* endDate */ hasValueForToday ? Date.today() : Date.yesterday(),
+            /* endDate */ hasEntryForToday ? Date.today() : Date.yesterday(),
             /* lookbackPeriod */ this.#trackingWindowDays);
 
-        const currentCalculatedEntry = calculatedValues.length > 0
-            ? calculatedValues.reduce((a, b) => a.date > b.date ? a : b)
+        const currentCalculatedEntry = calculatedEntries.length > 0
+            ? calculatedEntries.reduce((a, b) => a.date > b.date ? a : b)
             : null;
 
         const data = {
             title: this.#title,
             currentCalculatedValue: currentCalculatedEntry !== null ? currentCalculatedEntry.value.toFixed(this.#precision) + this.#unit : null,
-            currentCalculatedBasis: currentCalculatedEntry !== null ? currentCalculatedEntry.basis : null,
-            needTodaysEntry: !hasValueForToday,
+            currentCalculatedValueBasis: currentCalculatedEntry !== null
+                ? {
+                    successCount: currentCalculatedEntry.basis.successCount,
+                    failureCount: currentCalculatedEntry.basis.daysAttempted - currentCalculatedEntry.basis.successCount,
+                }
+                : null,
+            needTodaysEntry: !hasEntryForToday,
         };
 
         container.innerHTML = await this._template("template", data);
@@ -97,13 +100,13 @@ export default class GoalBinaryTrackerComponent extends BaseComponent
             todaysEntryNoAnchor: container.querySelector(".todays-entry .no"),
         };
 
-        if (!hasValueForToday)
+        if (!hasEntryForToday)
         {
             elements.todaysEntryYesAnchor.addEventListener("click", async e =>
             {
                 e.preventDefault();
                 
-                this.#store.setValue(Date.today(), true);
+                this.#setRawEntry(Date.today(), true);
                 await this.render(container, /* refreshData */ false);
             });
 
@@ -111,7 +114,7 @@ export default class GoalBinaryTrackerComponent extends BaseComponent
             {
                 e.preventDefault();
 
-                this.#store.setValue(Date.today(), false);
+                this.#setRawEntry(Date.today(), false);
                 await this.render(container, /* refreshData */ false);
             });
         }
@@ -120,12 +123,12 @@ export default class GoalBinaryTrackerComponent extends BaseComponent
         {
             e.preventDefault();
 
-            const rawValues = this.#getRawValues(
+            const rawEntries = this.#getRawEntries(
                 /* startDate */ Date.today().addDays(-(this.#visibleWindowDays + this.#trackingWindowDays)),
                 /* endDate */ Date.today(),
             );
 
-            elements.historyEditorDialog.innerHTML = await this._template("history-editor", { items: rawValues });
+            elements.historyEditorDialog.innerHTML = await this._template("history-editor", { entries: rawEntries });
             elements.historyEditorDialog.querySelector(".editable-elements-container").addEventListener("change", e =>
             {
                 if (!e.target.classList.contains("editable-element")) return;
@@ -133,19 +136,19 @@ export default class GoalBinaryTrackerComponent extends BaseComponent
                 e.preventDefault();
 
                 const date = new Date(e.target.dataset.date);
-                const value = e.target.type === "checkbox" ? e.target.checked : e.target.value;
+                const value = e.target.checked;
 
-                this.#setRawValue(date, value);
-                elements.historyEditorDialog.dataset.hasProgressChanged = true;
+                this.#setRawEntry(date, value);
+                elements.historyEditorDialog.dataset.haveValuesChanged = true;
             });
 
-            elements.historyEditorDialog.dataset.hasProgressChanged = false;
+            elements.historyEditorDialog.dataset.haveValuesChanged = false;
             elements.historyEditorDialog.showModal();
         });
 
         elements.historyEditorDialog.addEventListener("close", async () =>
         {
-            if (!elements.historyEditorDialog.dataset.hasProgressChanged) return;
+            if (!elements.historyEditorDialog.dataset.haveValuesChanged) return;
             
             await this.render(container, /* refreshData */ false);
         });
@@ -157,15 +160,15 @@ export default class GoalBinaryTrackerComponent extends BaseComponent
             this.#yMax,
             this.#visibleWindowDays,    // xWidthInDataPoints
             this.#goal,
-            value => value.toFixed(this.#precision) + this.#unit,
-            calculatedValues);
+            value => value.toFixed(this.#precision) + this.#unit,   // valueFormatter
+            calculatedEntries);
     }
 
     /**
      * @param {Date} date
      * @param {boolean} value
      */
-    #setRawValue(date, value)
+    #setRawEntry(date, value)
     {
         this.#store.setValue(date, value);
     }
@@ -176,27 +179,27 @@ export default class GoalBinaryTrackerComponent extends BaseComponent
      * 
      * @returns {{
      *      date: Date,
-     *      value: number
+     *      value: boolean
      * }[]}
      */
-    #getRawValues(startDate, endDate)
+    #getRawEntries(startDate, endDate)
     {
         if (startDate < this.#store.trackingStartDate)
         {
             startDate = this.#store.trackingStartDate;
         }
 
-        const rawValues = [];
+        const rawEntries = [];
 
         for (let date = endDate; date >= startDate; date = date.addDays(-1))
         {
-            rawValues.push({
+            rawEntries.push({
                 date: date,
                 value: this.#store.getValue(date),
             });
         }
 
-        return rawValues;
+        return rawEntries;
     }
 
     /**
@@ -213,7 +216,7 @@ export default class GoalBinaryTrackerComponent extends BaseComponent
      *      }
      * }[]}
      */
-    #getCalculatedValues(startDate, endDate, lookbackDays)
+    #getCalculatedEntries(startDate, endDate, lookbackDays)
     {
         const successRates = [];
 
