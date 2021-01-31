@@ -48,6 +48,25 @@ export default class Dashboard
     }
 
     /**
+     * @returns {Date?}
+     */
+    get lastDataRefreshDate()
+    {
+        const raw = this.#storage.getItem("options.lastDataRefreshDate");
+        return raw === null ? null : new Date(raw);
+    }
+
+    /**
+     * 
+     * @param {Date} value 
+     */
+    set #lastDataRefreshDate(value)
+    {
+        Argument.notNullOrUndefined(value, "value");
+        this.#storage.setItem("options.lastDataRefreshDate", value.toISOString());
+    }
+
+    /**
      * @param {HTMLElement} targetContainer
      * @param {boolean} refreshData
      * @returns {Promise}
@@ -72,6 +91,11 @@ export default class Dashboard
             targetContainer.dataset.layoutHash = newLayoutHashCode;
         }
 
+        if (refreshData)
+        {
+            this.#lastDataRefreshDate = new Date();
+        }
+
         await Promise.all(components.map(
             component =>
             {
@@ -92,6 +116,8 @@ export default class Dashboard
     {
         const components = await this.#componentsLazy.getValue();
         await Promise.all(components.map(c => c.refreshData()));
+
+        this.#lastDataRefreshDate = new Date();
     }
 
     /**
