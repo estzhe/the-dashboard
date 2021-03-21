@@ -58,6 +58,8 @@ export default class BaseComponent
     {
         Argument.notNullOrUndefined(container, "container");
         container.classList.add("component");
+
+        container.removeAttribute("title");
     }
 
     /**
