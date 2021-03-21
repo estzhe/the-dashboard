@@ -6,7 +6,12 @@
                     {{date-wordy date}}
                 </td>
                 <td>
-                    <input type="number" {{#if value}}value="{{value}}"{{/if}} data-date="{{date}}" class="editable-element" />
+                    <input
+                        type="number"
+                        data-date="{{date}}"
+                        class="editable-element"
+                        {{#ifEquals value 0}}value="0"{{/ifEquals}}
+                        {{#if value}}value="{{value}}"{{/if}} />
                 </td>
             </tr>
         {{/each}}

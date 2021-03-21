@@ -15,6 +15,7 @@ export default class GoalNumericTrackerComponent extends BaseComponent
     #yMax;
     #goal;
     #visibleWindowDays;
+    #ignoreSkippedDays;
 
     /**
      * @type GoalTrackerStore<number>
@@ -48,6 +49,7 @@ export default class GoalNumericTrackerComponent extends BaseComponent
         this.#yMax = parseFloat(options.yMax);
         this.#goal = options.goal ? parseFloat(options.goal) : null;
         this.#visibleWindowDays = parseInt(options.visibleWindowDays);
+        this.#ignoreSkippedDays = options.ignoreSkippedDays === "true";
 
         this.#store = new GoalTrackerStore(this._services.storage, `goal-numeric-tracker-component.${this.id}`);
         if (!this.#store.trackingStartDate)
@@ -62,9 +64,10 @@ export default class GoalNumericTrackerComponent extends BaseComponent
 
         const hasEntryForToday = this.#store.getValue(Date.today()) !== undefined;
 
-        const entries = this.#getEntries(
-            /* startDate */ Date.today().addDays(-this.#visibleWindowDays),
-            /* endDate */ Date.today());
+        const entries = this.#getEntriesUntilDate(
+            Date.today(),
+            /* includeDaysWithoutValue */ !this.#ignoreSkippedDays
+        ).slice(-this.#visibleWindowDays);
 
         let currentEntry = entries.length > 0
             ? entries.reduce((a, b) => a.date > b.date ? a : b)
@@ -96,14 +99,14 @@ export default class GoalNumericTrackerComponent extends BaseComponent
             {
                 e.preventDefault();
 
-                const isNumber = /^(\+|-)?(\d+\.\d+|\d+|\d+\.|\.\d+)$/.test(elements.todaysValueInput.value);
-                if (!isNumber)
+                let value = elements.todaysValueInput.value === "" ? null : Number(elements.todaysValueInput.value);
+                if (value === NaN || !this.#ignoreSkippedDays && value === null)
                 {
                     elements.todaysValueInput.style.border = "1px solid red";
                     return;
                 }
 
-                this.#setEntry(Date.today(), +elements.todaysValueInput.value);
+                this.#setEntry(Date.today(), value);
                 await this.render(container, /* refreshData */ false);
             });
         }
@@ -112,15 +115,21 @@ export default class GoalNumericTrackerComponent extends BaseComponent
         {
             e.preventDefault();
 
-            elements.historyEditorDialog.innerHTML = await this._template("history-editor", { entries });
+            const historyEntries = this.#getEntriesUntilDate(
+                Date.today(),
+                /*includeDaysWithoutValue */ true
+            ).sort((a, b) => a.date > b.date ? -1 : 1);
+
+            elements.historyEditorDialog.innerHTML = await this._template("history-editor", { entries: historyEntries });
             elements.historyEditorDialog.querySelector(".editable-elements-container").addEventListener("change", e =>
             {
                 if (!e.target.classList.contains("editable-element")) return;
+                if (Number(e.target.value) === NaN) return;
 
                 e.preventDefault();
 
                 const date = new Date(e.target.dataset.date);
-                const value = +e.target.value;
+                const value = e.target.value === "" ? null : Number(e.target.value);
 
                 this.#setEntry(date, value);
                 elements.historyEditorDialog.dataset.haveValuesChanged = true;
@@ -144,7 +153,7 @@ export default class GoalNumericTrackerComponent extends BaseComponent
             this.#yMax,
             this.#visibleWindowDays,    // xWidthInDataPoints
             this.#goal,
-            value => value === undefined ? "-" : value.toFixed(this.#precision) + this.#unit,   // valueFormatter
+            value => value === undefined || value === null ? "-" : value.toFixed(this.#precision) + this.#unit,   // valueFormatter
             entries);
     }
 
@@ -160,27 +169,29 @@ export default class GoalNumericTrackerComponent extends BaseComponent
     /**
      * @param {Date} startDate
      * @param {Date} endDate
+     * @param {boolean} includeDaysWithoutValue
      * 
      * @returns {{
      *      date: Date,
      *      value: number
      * }[]}
      */
-    #getEntries(startDate, endDate)
+    #getEntriesUntilDate(targetDate, includeDaysWithoutValue)
     {
-        if (startDate < this.#store.trackingStartDate)
-        {
-            startDate = this.#store.trackingStartDate;
-        }
+        Argument.notNullOrUndefined(targetDate, "targetDate");
+        Argument.notNullOrUndefined(includeDaysWithoutValue, "includeDaysWithoutValue");
 
         const values = [];
 
-        for (let date = endDate; date >= startDate; date = date.addDays(-1))
+        for (let date = this.#store.trackingStartDate; date <= targetDate; date = date.addDays(1))
         {
-            values.push({
-                date: date,
-                value: this.#store.getValue(date),
-            });
+            const value = this.#store.getValue(date);
+            if ((value === undefined || value === null) && !includeDaysWithoutValue)
+            {
+                continue;
+            }
+
+            values.push({ date, value });
         }
 
         return values;
