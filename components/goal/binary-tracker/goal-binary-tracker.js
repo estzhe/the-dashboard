@@ -136,7 +136,35 @@ export default class GoalBinaryTrackerComponent extends BaseComponent
                 /*includeDaysWithoutValue */ true
             ).sort((a, b) => a.date > b.date ? -1 : 1);
 
-            const data = { entries: rawEntries, ignoreSkippedDays: this.#ignoreSkippedDays };
+            if (rawEntries.length >= this.#trackingWindowDays)
+            {
+                if (this.#ignoreSkippedDays)
+                {
+                    for (let i = 0, trackedCount = 0; i < rawEntries.length; ++i)
+                    {
+                        if (rawEntries[i].value !== null &&
+                            rawEntries[i].value !== undefined)
+                        {
+                            trackedCount++;
+                        }
+
+                        if (trackedCount === this.#trackingWindowDays)
+                        {
+                            rawEntries[i].isLastTrackedEntry = true;
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    rawEntries[this.#trackingWindowDays - 1].isLastTrackedEntry = true;
+                }
+            }
+
+            const data = {
+                entries: rawEntries,
+                ignoreSkippedDays: this.#ignoreSkippedDays,
+            };
 
             elements.historyEditorDialog.innerHTML = await this._template("history-editor", data);
             elements.historyEditorDialog.querySelector(".editable-elements-container").addEventListener("change", e =>

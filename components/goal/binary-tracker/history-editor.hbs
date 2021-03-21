@@ -1,7 +1,9 @@
 <table class="editable-elements-container">
     <tbody>
         {{#each entries}}
-            <tr data-date="{{date}}">
+            <tr
+                data-date="{{date}}"
+                {{#if isLastTrackedEntry}} style="border-bottom: 1px solid gray" {{/if}}>
                 <td>
                     {{date-wordy date}}
                 </td>
