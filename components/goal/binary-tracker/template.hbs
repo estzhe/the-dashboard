@@ -19,7 +19,12 @@
 
     <div class="todays-entry" style="flex: 1;">
         {{#if needTodaysEntry}}
-            Today: <a href="" class="yes">yes</a> <a href="" class="no">no</a>
+            Today:
+                <a href="" data-value="true">yes</a>
+                <a href="" data-value="false">no</a>
+                {{#if ignoreSkippedDays}}
+                    <a href="" data-value="null">ignore</a>
+                {{/if}}
         {{/if}}
     </div>
 </div>

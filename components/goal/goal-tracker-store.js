@@ -50,7 +50,7 @@ export default class GoalTrackerStore
             this.#values = this.#readAllValues();
         }
 
-        const key = date.startOfDay().toISOString();
+        const key = this.#toKey(date);
         return this.#values.get(key);
     }
 
@@ -58,10 +58,18 @@ export default class GoalTrackerStore
     {
         Argument.notNullOrUndefined(date, "date");
 
-        const key = date.startOfDay().toISOString();
+        const key = this.#toKey(date);
 
         this.#values = this.#readAllValues();
-        this.#values.set(key, value);
+        
+        if (value === undefined)
+        {
+            this.#values.delete(key);
+        }
+        else
+        {
+            this.#values.set(key, value);
+        }
 
         this.#storeAllValues(this.#values);
     }
@@ -81,5 +89,14 @@ export default class GoalTrackerStore
     {
         const serialized = JSON.stringify(Array.from(values));
         this.#storage.setItem(`${this.#namespace}.values`, serialized);
+    }
+
+    #toKey(date)
+    {
+        const year = String(date.getFullYear()).padStart(4, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+
+        return `${year}-${month}-${day}`;
     }
 }

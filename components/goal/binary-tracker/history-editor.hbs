@@ -1,12 +1,48 @@
 <table class="editable-elements-container">
     <tbody>
         {{#each entries}}
-            <tr>
+            <tr data-date="{{date}}">
                 <td>
                     {{date-wordy date}}
                 </td>
                 <td>
-                    <input type="checkbox" {{#if value}}checked{{/if}} data-date="{{date}}" class="editable-element" />
+                    {{#if ../ignoreSkippedDays}}
+                        <label>
+                            <input
+                                type="radio"
+                                class="editable-element"
+                                name="date-{{date}}"
+                                value="true"
+                                {{#ifEquals value true}}checked{{/ifEquals}} />
+                            yes
+                        </label>
+                        
+                        <label>
+                            <input
+                                type="radio"
+                                class="editable-element"
+                                name="date-{{date}}"
+                                value="false"
+                                {{#ifEquals value false}}checked{{/ifEquals}} />
+                            no
+                        </label>
+
+                        <label>
+                            <input
+                                type="radio"
+                                class="editable-element"
+                                name="date-{{date}}"
+                                value="null"
+                                {{#ifEquals value undefined}}checked{{/ifEquals}}
+                                {{#ifEquals value null}}checked{{/ifEquals}} />
+                            ignore
+                        </label>
+                    {{else}}
+                        <input
+                            type="checkbox"
+                            class="editable-element"
+                            {{#if value}}checked{{/if}} />
+                    {{/if}}
                 </td>
             </tr>
         {{/each}}
