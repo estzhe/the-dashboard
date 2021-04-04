@@ -7,3 +7,9 @@
 {{else}}
     This issue does not have any details.
 {{/if}}
+
+{{#each comments}}
+    <div style="border-top: 1px solid black;">
+        {{{bodyHtml}}}
+    </div>
+{{/each}}

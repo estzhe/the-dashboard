@@ -75,10 +75,19 @@ export default class GithubIssuesComponent extends BaseComponent
 
                 const issueId = Number(e.target.closest(".item").dataset.issueId);
                 const issue = issues.find(x => x.id === issueId);
+                const comments = await GithubIssuesComponent.#fetchIssueComments(
+                    this.#repoInfo.owner,
+                    this.#repoInfo.repo,
+                    issue.number,
+                    Github.getPersonalAccessToken(this.#accountName),
+                );
 
                 const data = {
                     issue,
                     bodyHtml: marked(issue.body, { breaks: true }),
+                    comments: comments.map(c => ({
+                        bodyHtml: marked(c.body, { breaks: true})
+                    })),
                 };
 
                 elements.dialog.innerHTML = await this._template("issue-preview", data);
@@ -137,6 +146,42 @@ export default class GithubIssuesComponent extends BaseComponent
         while (issuesOnPage.length >= MAX_ISSIES_PER_PAGE);
 
         return issues;
+    }
+
+    static async #fetchIssueComments(repoOwner, repoName, issueNumber, accessToken)
+    {
+        Argument.notNullOrUndefinedOrEmpty(repoOwner, "repoOwner");
+        Argument.notNullOrUndefinedOrEmpty(repoName, "repoName");
+        Argument.isNumber(issueNumber, "issueNumber");
+        Argument.notNullOrUndefinedOrEmpty(accessToken, "accessToken");
+        
+        const MAX_COMMENTS_PER_PAGE = 100;
+        
+        const comments = [];
+
+        let page = 1;
+        let commentsOnPage;
+        do
+        {
+            let response = await fetch(
+                `https://api.github.com/repos/${repoOwner}/${repoName}/issues/${issueNumber}/comments` +
+                    `?per_page=${MAX_COMMENTS_PER_PAGE}` +
+                    `&page=${page}`,
+                {
+                    headers: {
+                        "Accept": "application/vnd.github.v3.raw+json",
+                        "Authorization": `Bearer ${accessToken}`
+                    }
+                });
+
+            commentsOnPage = await response.json();
+            comments.push(...commentsOnPage);
+
+            page++;
+        }
+        while (commentsOnPage.length >= MAX_COMMENTS_PER_PAGE);
+
+        return comments;
     }
 
     static #filterIssues(issues, filter)
