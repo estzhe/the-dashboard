@@ -109,17 +109,34 @@ export default class GithubIssuesComponent extends BaseComponent
         Argument.notNullOrUndefinedOrEmpty(repoName, "repoName");
         Argument.notNullOrUndefinedOrEmpty(accessToken, "accessToken");
         
-        const response = await fetch(
-            `https://api.github.com/repos/${repoOwner}/${repoName}/issues` +
-                `?state=open` +
-                `&per_page=100`,
-            {
-                headers: {
-                    "Accept": "application/vnd.github.v3.raw+json",
-                    "Authorization": `Bearer ${accessToken}`
-                }
-            });
-        return await response.json();
+        const MAX_ISSIES_PER_PAGE = 100;
+        
+        const issues = [];
+
+        let page = 1;
+        let issuesOnPage;
+        do
+        {
+            let response = await fetch(
+                `https://api.github.com/repos/${repoOwner}/${repoName}/issues` +
+                    `?state=open` +
+                    `&per_page=${MAX_ISSIES_PER_PAGE}` +
+                    `&page=${page}`,
+                {
+                    headers: {
+                        "Accept": "application/vnd.github.v3.raw+json",
+                        "Authorization": `Bearer ${accessToken}`
+                    }
+                });
+
+            issuesOnPage = await response.json();
+            issues.push(...issuesOnPage);
+
+            page++;
+        }
+        while (issuesOnPage.length >= MAX_ISSIES_PER_PAGE);
+
+        return issues;
     }
 
     static #filterIssues(issues, filter)
