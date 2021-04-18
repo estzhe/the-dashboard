@@ -47,12 +47,12 @@ function onKeyDown(e)
         return;
     }
 
-    if (e.key == "o")
+    if (e.key === "o")
     {
         e.preventDefault();
         chrome.tabs.update({ url: "pages/options.html" });
     }
-    else if (e.key == "r" && !e.ctrlKey && !e.altKey)
+    else if ((e.key === "r" || e.code === "KeyR") && !e.ctrlKey && !e.altKey)
     {
         e.preventDefault();
         elements.refreshButton.click();
