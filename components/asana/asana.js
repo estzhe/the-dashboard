@@ -6,7 +6,9 @@ export default class AsanaComponent extends BaseComponent
 {
     #title;
     #accountName;
-    #listId;
+    #projectId;
+    #sectionRecentlyAssigned;
+    #sectionToday;
 
     constructor(pathToComponent, options)
     {
@@ -17,14 +19,26 @@ export default class AsanaComponent extends BaseComponent
             throw new Error("asana: 'account' attribute is required.");
         }
 
-        if (!options.listId)
+        if (!options.projectId)
         {
-            throw new Error("asana: 'list-id' attribute is required.");
+            throw new Error("asana: 'project-id' attribute is required.");
+        }
+
+        if (!options.sectionRecentlyAssigned)
+        {
+            throw new Error("asana: 'section-recently-assigned' attribute is required.");
+        }
+
+        if (!options.sectionToday)
+        {
+            throw new Error("asana: 'section-today' attribute is required.");
         }
 
         this.#title = options.title;
         this.#accountName = options.account;
-        this.#listId = options.listId;
+        this.#projectId = options.projectId;
+        this.#sectionRecentlyAssigned = options.sectionRecentlyAssigned;
+        this.#sectionToday = options.sectionToday;
     }
 
     async render(container, refreshData)
@@ -43,10 +57,7 @@ export default class AsanaComponent extends BaseComponent
 
     async #renderTasks(container, tasks)
     {
-        tasks = [].concat(
-                    tasks.filter(t => t.assignee_status === "today"),
-                    tasks.filter(t => t.assignee_status === "inbox"))
-                .map(task =>
+        tasks = tasks.map(task =>
                 {
                     if (task.due_on)
                     {
@@ -65,7 +76,7 @@ export default class AsanaComponent extends BaseComponent
 
         const data = {
             title: this.#title,
-            listId: this.#listId,
+            projectId: this.#projectId,
             tasks,
         };
 
@@ -79,22 +90,69 @@ export default class AsanaComponent extends BaseComponent
             async() =>
             {
                 const accessToken = AsanaComponent.#getPersonalAccessToken(this.#accountName);
-                return await AsanaComponent.#fetchTasks(this.#listId, accessToken);
+                
+                const sections = await AsanaComponent.#fetchSections(this.#projectId, accessToken);
+                
+                const sectionRecentlyAssigned = sections.find(
+                    s => s.name.localeCompare(this.#sectionRecentlyAssigned, undefined, { sensitivity: "accent" }) === 0 );
+                if (sectionRecentlyAssigned === undefined)
+                {
+                    throw new Error(
+                        `asana: no section for recently assigned tasks found ` +
+                        `with name '${this.#sectionRecentlyAssigned}'.`);
+                }
+
+                const sectionToday = sections.find(
+                    s => s.name.localeCompare(this.#sectionToday, undefined, { sensitivity: "accent" }) === 0 );
+                if (sectionToday === undefined)
+                {
+                    throw new Error(
+                        `asana: no section for today's tasks found ` +
+                        `with name '${this.#sectionToday}'.`);
+                }
+
+                const tasksRecentlyAssigned = await AsanaComponent.#fetchSectionTasks(sectionRecentlyAssigned.gid, accessToken);
+                tasksRecentlyAssigned.forEach(t => t.section = "recently-assigned");
+
+                const tasksToday = await AsanaComponent.#fetchSectionTasks(sectionToday.gid, accessToken);
+                tasksToday.forEach(t => t.section = "today");
+
+                return [].concat(
+                    tasksRecentlyAssigned,
+                    tasksToday);
             },
             refreshData);
     }
 
-    static async #fetchTasks(listId, accessToken)
+    static async #fetchSections(projectId, accessToken)
     {
-        Argument.notNullOrUndefinedOrEmpty(listId, "listId");
+        Argument.notNullOrUndefinedOrEmpty(projectId, "projectId");
         Argument.notNullOrUndefinedOrEmpty(accessToken, "accessToken");
 
         const response = await fetch(
-            `https://app.asana.com/api/1.0/user_task_lists/${listId}/tasks` +
+            `https://app.asana.com/api/1.0/projects/${projectId}/sections?opt_pretty`,
+            {
+                headers: {
+                    "Accept": "application/json",
+                    "Authorization": `Bearer ${accessToken}`,
+                }
+            })
+            .then(_ => _.json());
+
+        return response.data;
+    }
+
+    static async #fetchSectionTasks(sectionId, accessToken)
+    {
+        Argument.notNullOrUndefinedOrEmpty(sectionId, "sectionId");
+        Argument.notNullOrUndefinedOrEmpty(accessToken, "accessToken");
+
+        const response = await fetch(
+            `https://app.asana.com/api/1.0/sections/${sectionId}/tasks` +
                 `?limit=100` +
                 `&opt_pretty` +
                 `&completed_since=now` +
-                `&opt_fields=name,resource_type,completed,assignee_status,due_on,notes`,
+                `&opt_fields=name,resource_type,completed,due_on,notes`,
             {
                 headers: {
                     "Accept": "application/json",

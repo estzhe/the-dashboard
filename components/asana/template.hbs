@@ -1,15 +1,15 @@
 {{#if title}}
-    <a href="https://app.asana.com/0/{{listId}}/list" class="anchor-header">
+    <a href="https://app.asana.com/0/{{projectId}}/list" class="anchor-header">
         <h1>{{title}}</h1>
     </a>
 {{/if}}
 
 {{#each tasks}}
     <a class="item"
-        href="https://app.asana.com/0/{{../listId}}/{{gid}}/f"
+        href="https://app.asana.com/0/{{../projectId}}/{{gid}}/f"
         title="{{notes}}">
 
-        <span class="column {{#ifEquals assignee_status 'inbox'}}negative-attention{{/ifEquals}}">
+        <span class="column {{#ifEquals section 'recently-assigned'}}negative-attention{{/ifEquals}}">
             {{name}}
         </span>
 
