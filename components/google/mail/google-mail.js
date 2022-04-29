@@ -96,7 +96,7 @@ export default class GoogleMailComponent extends BaseComponent
                 from: GoogleMailComponent.#parseFrom(headers.From),
                 subject: headers.Subject,
                 snippet: firstMessage.snippet,
-                isUnread: firstMessage.labelIds.includes("UNREAD")
+                isUnread: thread.messages.some(m => m.labelIds.includes("UNREAD")),
             };
         });
 
