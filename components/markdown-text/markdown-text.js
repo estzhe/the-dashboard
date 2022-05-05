@@ -1,4 +1,5 @@
 import BaseComponent from '/components/base-component.js';
+import { marked } from 'marked';
 
 export default class MarkdownTextComponent extends BaseComponent
 {

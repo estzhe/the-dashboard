@@ -1,6 +1,7 @@
 import Github from '/components/github/github.js';
 import Argument from '/lib/argument.js';
 import BaseComponent from '/components/base-component.js';
+import { marked } from 'marked';
 
 export default class GithubMarkdownComponent extends BaseComponent
 {

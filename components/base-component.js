@@ -1,5 +1,8 @@
 import Argument from '/lib/argument.js';
 import ReadCache from '/lib/read-cache.js';
+// TODO: replace with just 'handlebars' once https://github.com/handlebars-lang/handlebars.js/pull/1844 gets merged.
+import Handlebars from 'handlebars/lib/handlebars.js';
+import '/lib/handlebars-helpers.js';
 
 export default class BaseComponent
 {

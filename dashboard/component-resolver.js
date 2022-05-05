@@ -33,9 +33,14 @@ export default class ComponentResolver
         Argument.notNullOrUndefined(options, "options");
 
         const componentRoot = this.#componentsRoot + componentName;
-        const componentFileName = componentName.replace("/", "-") + ".js";
+        const componentFileName = componentName.replace("/", "-");
         
-        const { default: ComponentClass } = await import(`${componentRoot}/${componentFileName}`);
+        // TODO: Ideally we want to reuse componentRoot here, but for that
+        //       the module argument to import() would be completely dynamic,
+        //       which webpack has issues with. It needs a static prefix.
+        //       Gotta figure out how to fix this.
+        const { default: ComponentClass } = await import(
+            `/components/${componentName}/${componentFileName}.js`);
         
         return new ComponentClass(componentRoot, options);
     }

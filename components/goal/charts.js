@@ -1,5 +1,6 @@
 import Argument from '/lib/argument.js';
 import "/lib/date.js";
+import * as LightweightCharts from 'lightweight-charts';
 
 export default class Charts
 {
