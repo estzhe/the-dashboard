@@ -1,22 +1,32 @@
 "use strict";
 
 import Dashboard from '/dashboard/dashboard.js';
+import * as Monaco from 'monaco-editor';
 
 document.addEventListener("DOMContentLoaded", async () =>
 {
     const elements = {
         saveButton: document.querySelector("button.save"),
         cancelButton: document.querySelector("button.cancel"),
-        layoutTextarea: document.querySelector("textarea.layout"),
+        layoutEditor: document.querySelector(".layout-editor"),
     };
 
     const dashboard = new Dashboard();
 
-    elements.layoutTextarea.value = dashboard.getLayout();
-
+    const editor = Monaco.editor.create(
+        elements.layoutEditor,
+        {
+            value: dashboard.getLayout(),
+            language: 'html',
+            minimap: {
+                enabled: false,
+            },
+        },
+    );
+    
     elements.saveButton.addEventListener("click", () =>
     {
-        dashboard.setLayout(elements.layoutTextarea.value);
+        dashboard.setLayout(editor.getValue());
         chrome.tabs.update({ url: "chrome://newtab" });
     });
 
