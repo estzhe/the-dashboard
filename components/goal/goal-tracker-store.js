@@ -1,5 +1,5 @@
+import { Temporal } from '@js-temporal/polyfill';
 import Argument from '/lib/argument.js';
-import "/lib/date.js";
 
 /**
  * @template TValue
@@ -30,20 +30,37 @@ export default class GoalTrackerStore
         this.#namespace = namespace;
     }
 
+    /**
+     * @returns {Temporal.PlainDate}
+     */
     get trackingStartDate()
     {
         const serialized = this.#storage.getItem(`${this.#namespace}.tracking-start-date`);
-        return serialized ? new Date(serialized) : null;
+        return serialized ? Temporal.PlainDate.from(serialized) : null;
     }
 
+    /**
+     * @param {Temporal.PlainDate} date
+     */
     set trackingStartDate(date)
     {
-        this.#storage.setItem(`${this.#namespace}.tracking-start-date`, date.startOfDay().toISOString());
+        Argument.notNullOrUndefined(date, "date");
+        Argument.isInstanceOf(date, Temporal.PlainDate, "date");
+
+        this.#storage.setItem(
+            `${this.#namespace}.tracking-start-date`,
+            date.toJSON());
     }
 
+    /**
+     * @param {Temporal.PlainDate} date
+     * 
+     * @returns {TValue}
+     */
     getValue(date)
     {
         Argument.notNullOrUndefined(date, "date");
+        Argument.isInstanceOf(date, Temporal.PlainDate, "date");
 
         if (!this.#values)
         {
@@ -54,9 +71,14 @@ export default class GoalTrackerStore
         return this.#values.get(key);
     }
 
+    /**
+     * @param {Temporal.PlainDate} date
+     * @param {TValue} value
+     */
     setValue(date, value)
     {
         Argument.notNullOrUndefined(date, "date");
+        Argument.isInstanceOf(date, Temporal.PlainDate, "date");
 
         const key = this.#toKey(date);
 
@@ -91,12 +113,13 @@ export default class GoalTrackerStore
         this.#storage.setItem(`${this.#namespace}.values`, serialized);
     }
 
+    /**
+     * @param {Temporal.PlainDate} date
+     * 
+     * @returns {string}
+     */
     #toKey(date)
     {
-        const year = String(date.getFullYear()).padStart(4, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-
-        return `${year}-${month}-${day}`;
+        return date.toJSON();
     }
 }

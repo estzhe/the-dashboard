@@ -1,6 +1,8 @@
 "use strict";
 
+import { Temporal } from '@js-temporal/polyfill';
 import Dashboard from '/dashboard/dashboard.js';
+import ReadableTemporalFormat from '/lib/readable-temporal-format.js';
 
 const elements = {};
 const dashboard = new Dashboard();
@@ -23,8 +25,11 @@ async function onLoad()
 
     elements.lastDataRefreshDateSpan.innerHTML =
         dashboard.lastDataRefreshDate !== null
-            ? dashboard.lastDataRefreshDate.toWordyDateTimeString()
-            : "unknown";
+            ? ReadableTemporalFormat.plainDateTimeToString(
+                dashboard.lastDataRefreshDate
+                         .toZonedDateTimeISO(Temporal.Now.timeZone())
+                         .toPlainDateTime())
+            : "never";
 }
 
 async function onRefreshClick(e)
@@ -35,8 +40,11 @@ async function onRefreshClick(e)
 
     elements.lastDataRefreshDateSpan.innerHTML =
         dashboard.lastDataRefreshDate !== null
-            ? dashboard.lastDataRefreshDate.toWordyDateTimeString()
-            : "unknown";
+            ? ReadableTemporalFormat.plainDateTimeToString(
+                dashboard.lastDataRefreshDate
+                         .toZonedDateTimeISO(Temporal.Now.timeZone())
+                         .toPlainDateTime())
+            : "never";
 }
 
 function onKeyDown(e)

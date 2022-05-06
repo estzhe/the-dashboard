@@ -5,14 +5,14 @@
 {{/if}}
 
 {{#each eventsByDate}}
-    <h2>{{date-wordy date}}</h2>
+    <h2>{{readable-date date}}</h2>
 
     {{#each events}}
         <a class="item" href="{{{uri}}}" title="{{notes}}">
 
             <span class="column right" style="flex: 0 0 2rem">
                 {{#if showStartTime}}
-                    {{time startTime}}
+                    {{time startDateTime}}
                 {{/if}}
             </span>
 
@@ -24,7 +24,7 @@
 
             <span class="column right" style="flex: 0 0 2rem;">
                 {{#if showEndTime}}
-                    {{time endTime}}
+                    {{time endDateTime}}
                 {{/if}}
             </span>
 

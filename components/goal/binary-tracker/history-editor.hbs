@@ -2,10 +2,10 @@
     <tbody>
         {{#each entries}}
             <tr
-                data-date="{{date}}"
+                data-date="{{toString date}}"
                 {{#if isLastTrackedEntry}} style="border-bottom: 1px solid gray" {{/if}}>
                 <td>
-                    {{date-wordy date}}
+                    {{readable-date date}}
                 </td>
                 <td>
                     {{#if ../ignoreSkippedDays}}
@@ -13,7 +13,7 @@
                             <input
                                 type="radio"
                                 class="editable-element"
-                                name="date-{{date}}"
+                                name="date-{{toString date}}"
                                 value="true"
                                 {{#ifEquals value true}}checked{{/ifEquals}} />
                             yes
@@ -23,7 +23,7 @@
                             <input
                                 type="radio"
                                 class="editable-element"
-                                name="date-{{date}}"
+                                name="date-{{toString date}}"
                                 value="false"
                                 {{#ifEquals value false}}checked{{/ifEquals}} />
                             no
@@ -33,7 +33,7 @@
                             <input
                                 type="radio"
                                 class="editable-element"
-                                name="date-{{date}}"
+                                name="date-{{toString date}}"
                                 value="null"
                                 {{#ifEquals value undefined}}checked{{/ifEquals}}
                                 {{#ifEquals value null}}checked{{/ifEquals}} />

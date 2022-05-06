@@ -1,6 +1,6 @@
 import Argument from '/lib/argument.js';
 import BaseComponent from '/components/base-component.js';
-import "/lib/date.js";
+import { Temporal } from '@js-temporal/polyfill';
 
 export default class AsanaComponent extends BaseComponent
 {
@@ -61,14 +61,11 @@ export default class AsanaComponent extends BaseComponent
                 {
                     if (task.due_on)
                     {
-                        const parts = task.due_on.split(/\D/);
-                        parts[1] = parts[1] - 1;    // month
-
-                        const due = new Date(...parts);
+                        const due = Temporal.PlainDate.from(task.due_on);
                         
                         task.due_on = due;
-                        task.is_past_due = due < Date.today();
-                        task.is_due_today = due.startOfDay().getDate() === Date.today().getDate();
+                        task.is_past_due = Temporal.PlainDate.compare(due, Temporal.Now.plainDateISO()) < 0;
+                        task.is_due_today = Temporal.PlainDate.compare(due, Temporal.Now.plainDateISO()) === 0;
                     }
 
                     return task;

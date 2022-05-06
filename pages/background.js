@@ -1,3 +1,4 @@
+import { Temporal } from '@js-temporal/polyfill';
 import Dashboard from '/dashboard/dashboard.js';
 
 chrome.runtime.onInstalled.addListener(
@@ -25,5 +26,5 @@ async function onRefreshData()
     const dashboard = new Dashboard();
     await dashboard.refreshData();
 
-    console.log("Data refreshed at:", new Date());
+    console.log("Data refreshed at:", Temporal.Now.plainDateTimeISO().toLocaleString());
 }

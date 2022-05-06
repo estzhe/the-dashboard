@@ -2,6 +2,7 @@ import Argument from '/lib/argument.js';
 import AsyncLazy from '/lib/async-lazy.js';
 import DashboardLayout from '/dashboard/dashboard-layout.js';
 import ComponentResolver from '/dashboard/component-resolver.js';
+import { Temporal } from '@js-temporal/polyfill';
 
 export default class Dashboard
 {
@@ -48,22 +49,22 @@ export default class Dashboard
     }
 
     /**
-     * @returns {Date?}
+     * @returns {Temporal.Instant?}
      */
     get lastDataRefreshDate()
     {
         const raw = this.#storage.getItem("options.lastDataRefreshDate");
-        return raw === null ? null : new Date(raw);
+        return raw === null ? null : Temporal.Instant.from(raw);
     }
 
     /**
      * 
-     * @param {Date} value 
+     * @param {Temporal.Instant} value
      */
     set #lastDataRefreshDate(value)
     {
         Argument.notNullOrUndefined(value, "value");
-        this.#storage.setItem("options.lastDataRefreshDate", value.toISOString());
+        this.#storage.setItem("options.lastDataRefreshDate", value.toString());
     }
 
     /**
@@ -93,7 +94,7 @@ export default class Dashboard
 
         if (refreshData)
         {
-            this.#lastDataRefreshDate = new Date();
+            this.#lastDataRefreshDate = Temporal.Now.instant();
         }
 
         await Promise.all(components.map(
@@ -117,7 +118,7 @@ export default class Dashboard
         const components = await this.#componentsLazy.getValue();
         await Promise.all(components.map(c => c.refreshData()));
 
-        this.#lastDataRefreshDate = new Date();
+        this.#lastDataRefreshDate = Temporal.Now.instant();
     }
 
     /**

@@ -1,6 +1,7 @@
 import Argument from '/lib/argument.js';
 import BaseComponent from '/components/base-component.js';
 import WeatherGraphics from '/components/weather/weather-graphics.js';
+import { Temporal } from '@js-temporal/polyfill';
 
 export default class WeatherComponent extends BaseComponent
 {
@@ -30,9 +31,12 @@ export default class WeatherComponent extends BaseComponent
 
         for (const h of data.hourly)
         {
-            const date = new Date(h.dt * 1000);
-            h.displayTime = date.getHours() % 2 == 0
-                ? (date.getHours() % 12 || 12) + "" + (date.getHours() < 12 ? "am" : "pm")
+            const dateTime = Temporal.Instant.fromEpochSeconds(h.dt).toZonedDateTimeISO(Temporal.Now.timeZone());
+            h.displayTime = dateTime.hour % 2 === 0
+                ? dateTime
+                    .toLocaleString(undefined /* current locale */, { hour: "numeric", hourCycle: "h12" })
+                    .replace(" ", "")
+                    .toLowerCase()
                 : "";
         }
 
@@ -96,13 +100,6 @@ export default class WeatherComponent extends BaseComponent
                 return await WeatherComponent.#fetchWeatherData(location, apiKey);
             },
             refreshData);
-    }
-
-    static async #fetchData()
-    {
-        const apiKey = WeatherComponent.#getApiKey();
-        const location = await WeatherComponent.#getLocation();
-        return await WeatherComponent.#fetchWeatherData(location, apiKey);
     }
 
     static async #fetchWeatherData(location, apiKey)

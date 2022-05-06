@@ -1,9 +1,8 @@
 import Argument from '/lib/argument.js';
-import "/lib/date.js";
-
 import BaseComponent from '/components/base-component.js';
 import Charts from '/components/goal/charts.js';
 import GoalTrackerStore from '/components/goal/goal-tracker-store.js';
+import { Temporal } from '@js-temporal/polyfill';
 
 export default class GoalNumericTrackerComponent extends BaseComponent
 {
@@ -54,7 +53,7 @@ export default class GoalNumericTrackerComponent extends BaseComponent
         this.#store = new GoalTrackerStore(this._services.storage, `goal-numeric-tracker-component.${this.id}`);
         if (!this.#store.trackingStartDate)
         {
-            this.#store.trackingStartDate = Date.today();
+            this.#store.trackingStartDate = Temporal.Now.plainDateISO();
         }
     }
 
@@ -62,15 +61,18 @@ export default class GoalNumericTrackerComponent extends BaseComponent
     {
         await super.render(container, refreshData);
 
-        const hasEntryForToday = this.#store.getValue(Date.today()) !== undefined;
+        const today = Temporal.Now.plainDateISO();
+        const yesterday = Temporal.Now.plainDateISO().subtract({ days: 1 });
+
+        const hasEntryForToday = this.#store.getValue(today) !== undefined;
 
         const entries = this.#getEntriesUntilDate(
-            Date.today(),
+            today,
             /* includeDaysWithoutValue */ !this.#ignoreSkippedDays
         ).slice(-this.#visibleWindowDays);
 
         let currentEntry = entries.length > 0
-            ? entries.reduce((a, b) => a.date > b.date ? a : b)
+            ? entries.reduce((a, b) => Temporal.PlainDate.compare(a.date, b.date) > 0 ? a : b)
             : null;
         if (currentEntry?.value === undefined)
         {
@@ -106,7 +108,7 @@ export default class GoalNumericTrackerComponent extends BaseComponent
                     return;
                 }
 
-                this.#setEntry(Date.today(), value);
+                this.#setEntry(today, value);
                 await this.render(container, /* refreshData */ false);
             });
         }
@@ -116,9 +118,9 @@ export default class GoalNumericTrackerComponent extends BaseComponent
             e.preventDefault();
 
             const historyEntries = this.#getEntriesUntilDate(
-                Date.today(),
+                today,
                 /*includeDaysWithoutValue */ true
-            ).sort((a, b) => a.date > b.date ? -1 : 1);
+            ).sort((a, b) => Temporal.PlainDate.compare(a.date, b.date) > 0 ? -1 : 1);
 
             elements.historyEditorDialog.innerHTML = await this._template("history-editor", { entries: historyEntries });
             elements.historyEditorDialog.querySelector(".editable-elements-container").addEventListener("change", e =>
@@ -128,7 +130,7 @@ export default class GoalNumericTrackerComponent extends BaseComponent
 
                 e.preventDefault();
 
-                const date = new Date(e.target.dataset.date);
+                const date = Temporal.PlainDate.from(e.target.dataset.date);
                 const value = e.target.value === "" ? null : Number(e.target.value);
 
                 this.#setEntry(date, value);
@@ -158,7 +160,7 @@ export default class GoalNumericTrackerComponent extends BaseComponent
     }
 
     /**
-     * @param {Date} date
+     * @param {Temporal.PlainDate} date
      * @param {number} value
      */
     #setEntry(date, value)
@@ -167,23 +169,26 @@ export default class GoalNumericTrackerComponent extends BaseComponent
     }
 
     /**
-     * @param {Date} startDate
-     * @param {Date} endDate
+     * @param {Temporal.PlainDate} targetDate
      * @param {boolean} includeDaysWithoutValue
      * 
      * @returns {{
-     *      date: Date,
+     *      date: Temporal.PlainDate,
      *      value: number
      * }[]}
      */
     #getEntriesUntilDate(targetDate, includeDaysWithoutValue)
     {
         Argument.notNullOrUndefined(targetDate, "targetDate");
+        Argument.isInstanceOf(targetDate, Temporal.PlainDate, "targetDate");
         Argument.notNullOrUndefined(includeDaysWithoutValue, "includeDaysWithoutValue");
 
         const values = [];
 
-        for (let date = this.#store.trackingStartDate; date <= targetDate; date = date.addDays(1))
+        for (
+            let date = this.#store.trackingStartDate;
+            Temporal.PlainDate.compare(date, targetDate) <= 0;
+            date = date.add({ days: 1 }))
         {
             const value = this.#store.getValue(date);
             if ((value === undefined || value === null) && !includeDaysWithoutValue)

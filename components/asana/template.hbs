@@ -16,7 +16,7 @@
         {{#if due_on}}
             <span class="column {{#if is_past_due}}negative-attention{{/if}} {{#if is_due_today}}positive-attention{{/if}}"
                   style="flex: 0 0 5rem;">
-                {{date-wordy due_on}}
+                {{readable-date due_on}}
             </span>
         {{/if}}
     

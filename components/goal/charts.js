@@ -1,6 +1,7 @@
 import Argument from '/lib/argument.js';
-import "/lib/date.js";
 import * as LightweightCharts from 'lightweight-charts';
+import { Temporal } from '@js-temporal/polyfill';
+import ReadableTemporalFormat from '/lib/readable-temporal-format.js';
 
 export default class Charts
 {
@@ -14,7 +15,7 @@ export default class Charts
      * @param {number} xWidthInDataPoints - Width of x-axis in data points (how many data points will the x-axis be able to fit).
      * @param {number} goal - An optional value to draw a horizontal "goal" line.
      * @param {function(number): string} valueFormatter - A function that formats value for display.
-     * @param {{ date: Date, value: number }} data - Data points to render.
+     * @param {{ date: Temporal.PlainDate, value: number }} data - Data points to render.
      */
     static renderLineChart(
         container,
@@ -119,9 +120,9 @@ export default class Charts
         
         series.setData(
             [...data]
-                .sort((a, b) => a.date > b.date ? 1 : a.date < b.date ? -1 : 0)
+                .sort((a, b) => Temporal.PlainDate.compare(a.date, b.date))
                 .map(entry => ({
-                    time: Charts.#serializeDateForChart(entry.date),
+                    time: entry.date.toString(), // yyyy-dd-mm expected
                     value: entry.value,
                 }))
         );
@@ -178,8 +179,18 @@ export default class Charts
             }
 
             const date = LightweightCharts.isBusinessDay(e.time)
-                ? new Date(e.time.year, e.time.month - 1, e.time.day)
-                : new Date(e.time * 1000);
+                ? Temporal.PlainDate.from(e.time)
+                // It looks like in some cases lightweight-charts convers passed date strings
+                // into seconds since epoch and returns that here instead of a BusinessDay object.
+                // We assume that the conversion happened this way:
+                //      plain date
+                //          -> add time = 00:00, time zone UTC and treat as zoned date time
+                //          -> seconds since epoch (UTC)
+                // Here we do the reverse.
+                : Temporal
+                    .Instant.fromEpochSeconds(e.time)
+                    .toZonedDateTimeISO(new Temporal.TimeZone("UTC"))
+                    .toPlainDate();
             const value = valueFormatter(e.seriesPrices.values().next().value);
 
             tooltip.innerHTML = `
@@ -187,7 +198,7 @@ export default class Charts
                     ${value}&nbsp;
                 </div>
                 <div style='font-size: smaller;'>
-                    ${date.toWordyDateString()}
+                    ${ReadableTemporalFormat.plainDateToString(date)}
                 </div>
             `;
 
@@ -203,14 +214,5 @@ export default class Charts
             tooltip.style.top = y + "px";
             tooltip.style.display = "block";
         });
-    }
-
-    static #serializeDateForChart(date)
-    {
-        const year = date.getFullYear();
-        const month = ('0' + (date.getMonth() + 1)).slice(-2);
-        const day = ('0' + date.getDate()).slice(-2);
-    
-        return `${year}-${month}-${day}`;
     }
 }

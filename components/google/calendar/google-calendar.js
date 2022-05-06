@@ -1,14 +1,32 @@
 import Argument from '/lib/argument.js';
 import Google from '/components/google/google.js';
 import BaseComponent from '/components/base-component.js';
-import "/lib/date.js";
+import { Temporal } from '@js-temporal/polyfill';
+
+// TODO: we need to be more explicit about time zones:
+//          - explicit display time zone (with validation that the time zone
+//            is same as any other display timezoned datetime used (e.g., start
+//            and end configured by user))
+//          - use calendar/event time zone (right now it is ignored).
 
 export default class GoogleCalendarComponent extends BaseComponent
 {
     #title;
     #calendarsToDisplay;
-    #start;
-    #end;
+
+    /**
+     * Inclusive.
+     * 
+     * @type {Temporal.ZonedDateTime}
+     */
+    #startDateTime;
+    
+    /**
+     * Inclusive.
+     * 
+     * @type {Temporal.ZonedDateTime}
+     */
+    #endDateTime;
 
     constructor(pathToComponent, options)
     {
@@ -29,18 +47,18 @@ export default class GoogleCalendarComponent extends BaseComponent
             throw new Error("google-calendar: 'end' attribute is required.");
         }
 
-        const start = GoogleCalendarComponent.#parseDateAttribute(options.start, /* rounding */ "down");;
-        const end = GoogleCalendarComponent.#parseDateAttribute(options.end, /* rounding */ "up");
+        const startDateTime = GoogleCalendarComponent.#parseDateAttribute(options.start, /* rounding */ "down");;
+        const endDateTime = GoogleCalendarComponent.#parseDateAttribute(options.end, /* rounding */ "up");
 
-        if (start >= end)
+        if (Temporal.ZonedDateTime.compare(startDateTime, endDateTime) >= 0)
         {
             throw new Error("google-calendar: 'start' should be earlier than 'end'.");
         }
 
         this.#title = options.title;
         this.#calendarsToDisplay = GoogleCalendarComponent.#parseCalendarListAttribute(options.calendars);
-        this.#start = start;
-        this.#end = end;
+        this.#startDateTime = startDateTime;
+        this.#endDateTime = endDateTime;
     }
 
     async render(container, refreshData)
@@ -68,21 +86,15 @@ export default class GoogleCalendarComponent extends BaseComponent
                 event.color = colors.calendar[ec.calendar.colorId];
 
                 event.isFullDay = !!event.start.date;
-
                 if (event.isFullDay)
                 {
-                    let parts = event.start.date.split(/\D/);
-                    parts[1]--; // month
-                    event.start = new Date(...parts);
-
-                    parts = event.end.date.split(/\D/);
-                    parts[1]--; // month
-                    event.end = new Date(...parts);
+                    event.start = Temporal.PlainDate.from(event.start.date).toZonedDateTimeISO(Temporal.Now.timeZone());
+                    event.end = Temporal.PlainDate.from(event.end.date).toZonedDateTimeISO(Temporal.Now.timeZone());
                 }
                 else
                 {
-                    event.start = new Date(Date.parse(event.start.dateTime));
-                    event.end = new Date(Date.parse(event.end.dateTime));
+                    event.start = Temporal.Instant.from(event.start.dateTime).toZonedDateTimeISO(Temporal.Now.timeZone());
+                    event.end = Temporal.Instant.from(event.end.dateTime).toZonedDateTimeISO(Temporal.Now.timeZone());
                 }
 
                 return event;
@@ -90,15 +102,20 @@ export default class GoogleCalendarComponent extends BaseComponent
             .flat();
 
         const eventsByDate = [];
-        for (let date = this.#start.startOfDay(); date < this.#end; date = date.addDays(1))
+        for (
+            let date = this.#startDateTime.toPlainDate();
+            Temporal.PlainDate.compare(date, this.#endDateTime) <= 0;
+            date = date.add({ days: 1 }))
         {
             const eventsOnThisDay = events
-                .filter(e => e.start < date.addDays(1) && date < e.end)
-                .sort((e1, e2) => e1.start.getTime() - e2.start.getTime())
+                .filter(e =>
+                    Temporal.PlainDate.compare(e.start, date) <= 0 &&
+                    Temporal.PlainDate.compare(date, e.end) <= 0)
+                .sort((e1, e2) => Temporal.ZonedDateTime.compare(e1.start, e2.start))
                 .map(e =>
                 {
-                    const startIsOnThisDay = !(e.start < date);
-                    const endIsOnThisDay = !(e.end > date.endOfDay());
+                    const startIsOnThisDay = date.equals(e.start);
+                    const endIsOnThisDay = date.equals(e.end);
                     const isFullDay = e.isFullDay || !startIsOnThisDay && !endIsOnThisDay;
 
                     return {
@@ -109,8 +126,8 @@ export default class GoogleCalendarComponent extends BaseComponent
                         isFullDay,
                         showStartTime: !isFullDay && startIsOnThisDay,
                         showEndTime: !isFullDay && endIsOnThisDay,
-                        startTime: e.start,
-                        endTime: e.end,
+                        startDateTime: e.start,
+                        endDateTime: e.end,
 
                         calendar: {
                             name: e.calendar.summary,
@@ -151,7 +168,7 @@ export default class GoogleCalendarComponent extends BaseComponent
                     calendars.map(async calendar =>
                     {
                         const events = await GoogleCalendarComponent.#fetchEvents(
-                            calendar.id, this.#start, this.#end, accessToken);
+                            calendar.id, this.#startDateTime, this.#endDateTime, accessToken);
                         
                         return { calendar, events };
                     }));
@@ -161,18 +178,35 @@ export default class GoogleCalendarComponent extends BaseComponent
             refreshData);
     }
 
-    static async #fetchEvents(calendarId, start, end, accessToken)
+    /**
+     * 
+     * @param {string} calendarId
+     * @param {Temporal.ZonedDateTime} startDateTime
+     * @param {Temporal.ZonedDateTime} endDateTime
+     * @param {string} accessToken
+     * 
+     * @returns {object}
+     */
+    static async #fetchEvents(calendarId, startDateTime, endDateTime, accessToken)
     {
         Argument.notNullOrUndefinedOrEmpty(calendarId, "calendarId");
-        Argument.notNullOrUndefined(start, "start");
-        Argument.notNullOrUndefined(end, "end");
+        Argument.notNullOrUndefined(startDateTime, "startDateTime");
+        Argument.notNullOrUndefined(endDateTime, "endDateTime");
         Argument.notNullOrUndefinedOrEmpty(accessToken, "accessToken");
+
+        if (startDateTime.timeZone.id !== endDateTime.timeZone.id)
+        {
+            throw new Error(
+                `Timezones of startDateTime (${startDateTime.timeZone.id}) and `+
+                `endDateTime (${endDateTime.timeZone.id}) are expected to match.`);
+        }
 
         const response = await fetch(
             `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events` +
                 `?singleEvents=true` +
-                `&timeMin=${start.toISOString()}` +
-                `&timeMax=${end.toISOString()}`,
+                `&timeMin=${startDateTime.toString({ timeZoneName: "never" })}` +
+                `&timeMax=${endDateTime.toString({ timeZoneName: "never" })}` +
+                `&timeZone=${encodeURIComponent(startDateTime.timeZone.id)}`,
             {
                 headers: {
                     "Authorization": `Bearer ${accessToken}`
@@ -221,7 +255,9 @@ export default class GoogleCalendarComponent extends BaseComponent
                     return calendar.primary &&
                            calendarName.localeCompare("primary", undefined, { sensitivity: "accent" }) === 0
                            ||
-                           calendar.summary.localeCompare(calendarName, undefined, { sensitivity: "accent" }) === 0;
+                           calendar.summary.localeCompare(calendarName, undefined, { sensitivity: "accent" }) === 0
+                           ||
+                           calendar.summaryOverride?.localeCompare(calendarName, undefined, { sensitivity: "accent" }) === 0;
                 }));
 
         return calendars;
@@ -240,6 +276,12 @@ export default class GoogleCalendarComponent extends BaseComponent
         return calendarNames;
     }
 
+    /**
+     * @param {string} value 
+     * @param {"up"|"down"} rounding
+     * 
+     * @returns {Temporal.ZonedDateTime}
+     */
     static #parseDateAttribute(value, rounding)
     {
         Argument.notNullOrUndefinedOrEmpty(value, "value");
@@ -255,12 +297,12 @@ export default class GoogleCalendarComponent extends BaseComponent
 
         const { anchor, offsetSign, offsetValue } = match.groups;
 
-        const date = new Date();
+        let dateTime = Temporal.Now.zonedDateTimeISO();
 
         if (offsetValue)
         {
             const offset = (offsetSign === "+" ? 1 : -1) * parseInt(offsetValue);
-            date.setDate(date.getDate() + offset);
+            dateTime = dateTime.add({ days: offset });
         }
 
         const needsRounding = anchor !== "now";
@@ -268,14 +310,15 @@ export default class GoogleCalendarComponent extends BaseComponent
         {
             if (rounding === "down")
             {
-                date.setHours(0, 0, 0, 0);
+                dateTime = dateTime.round({ smallestUnit: "day", roundingMode: "floor" });
             }
             else
             {
-                date.setHours(23, 59, 59, 999);
+                dateTime = dateTime.round({ smallestUnit: "second", roundingMode: "floor" })
+                                   .with({ hour: 23, minute: 59, second: 59 });
             }
         }
 
-        return date;
+        return dateTime;
     }
 }
