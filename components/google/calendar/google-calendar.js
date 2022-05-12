@@ -88,8 +88,16 @@ export default class GoogleCalendarComponent extends BaseComponent
                 event.isFullDay = !!event.start.date;
                 if (event.isFullDay)
                 {
-                    event.start = Temporal.PlainDate.from(event.start.date).toZonedDateTimeISO(Temporal.Now.timeZone());
-                    event.end = Temporal.PlainDate.from(event.end.date).toZonedDateTimeISO(Temporal.Now.timeZone());
+                    event.start = Temporal.PlainDate.from(event.start.date)
+                        .toZonedDateTime({
+                            timeZone: Temporal.Now.timeZone(),
+                            plainTime: Temporal.PlainTime.from("00:00:00"),
+                        });
+                    event.end = Temporal.PlainDate.from(event.end.date)
+                        .toZonedDateTime({
+                            timeZone: Temporal.Now.timeZone(),
+                            plainTime: Temporal.PlainTime.from("23:59:59"),
+                        });
                 }
                 else
                 {
