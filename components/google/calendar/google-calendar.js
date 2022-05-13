@@ -94,6 +94,7 @@ export default class GoogleCalendarComponent extends BaseComponent
                             plainTime: Temporal.PlainTime.from("00:00:00"),
                         });
                     event.end = Temporal.PlainDate.from(event.end.date)
+                        .subtract({ days: 1 })
                         .toZonedDateTime({
                             timeZone: Temporal.Now.timeZone(),
                             plainTime: Temporal.PlainTime.from("23:59:59"),
