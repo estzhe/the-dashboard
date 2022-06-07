@@ -83,7 +83,7 @@ export default class Charts
                 timeScale: {
                     borderVisible: false,
                     fixLeftEdge: true,
-                }
+                },
             });
         
         const series = chart.addLineSeries({
@@ -180,7 +180,7 @@ export default class Charts
 
             const date = LightweightCharts.isBusinessDay(e.time)
                 ? Temporal.PlainDate.from(e.time)
-                // It looks like in some cases lightweight-charts convers passed date strings
+                // It looks like in some cases lightweight-charts converts passed date strings
                 // into seconds since epoch and returns that here instead of a BusinessDay object.
                 // We assume that the conversion happened this way:
                 //      plain date
