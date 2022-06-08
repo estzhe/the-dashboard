@@ -91,12 +91,14 @@ export default class GoogleMailComponent extends BaseComponent
             const firstMessage = thread.messages[0];
             const headers = Object.fromEntries(firstMessage.payload.headers.map(h => [h.name, h.value]));
 
+            const firstUnreadMessage = thread.messages.find(m => m.labelIds.includes("UNREAD"));
+
             return {
                 threadId: firstMessage.threadId,
                 from: GoogleMailComponent.#parseFrom(headers.From),
                 subject: headers.Subject,
-                snippet: firstMessage.snippet,
-                isUnread: thread.messages.some(m => m.labelIds.includes("UNREAD")),
+                snippet: (firstUnreadMessage ?? firstMessage).snippet,
+                isUnread: firstUnreadMessage !== undefined,
             };
         });
 
