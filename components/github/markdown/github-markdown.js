@@ -41,8 +41,15 @@ export default class GithubMarkdownComponent extends BaseComponent
             editUrl: `https://github.com/${this.#documentInfo.owner}` +
                         `/${this.#documentInfo.repo}/edit` +
                         `/${this.#documentInfo.branch}` +
-                        `/${this.#documentInfo.path}`,
-            html: marked(markdown),
+                        `/${this.#documentInfo.directory}${this.#documentInfo.filename}`,
+            html: marked.parse(
+                markdown,
+                {
+                    baseUrl: `https://github.com/${this.#documentInfo.owner}` +
+                                `/${this.#documentInfo.repo}/blob` +
+                                `/${this.#documentInfo.branch}` +
+                                `/${this.#documentInfo.directory}`,
+                }),
         };
         
         container.innerHTML = await this._template("template", data);
@@ -70,7 +77,7 @@ export default class GithubMarkdownComponent extends BaseComponent
         const response = await fetch(
             `https://api.github.com` +
                 `/repos/${documentInfo.owner}/${documentInfo.repo}` +
-                `/contents/${documentInfo.path}` +
+                `/contents/${documentInfo.directory}${documentInfo.filename}` +
                 `?ref=${documentInfo.branch}`,
             {
                 headers: {
@@ -84,15 +91,15 @@ export default class GithubMarkdownComponent extends BaseComponent
 
     static #parseDocumentUri(uri)
     {
-        const documentUriRegex = /github\.com\/(?<owner>[^\/]+)\/(?<repo>[^\/]+)\/blob\/(?<branch>[^\/]+)\/(?<path>.+)/i;
+        const documentUriRegex = /github\.com\/(?<owner>[^\/]+)\/(?<repo>[^\/]+)\/blob\/(?<branch>[^\/]+)\/(?<directory>.*?)(?<filename>[^/]+)$/i;
         const match = documentUriRegex.exec(uri);
         if (!match)
         {
             throw new Error("Document URI is in unexpected format.");
         }
 
-        const { owner, repo, branch, path } = match.groups;
+        const { owner, repo, branch, directory, filename } = match.groups;
 
-        return { owner, repo, branch, path };
+        return { owner, repo, branch, directory, filename };
     }
 }
