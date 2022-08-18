@@ -6,7 +6,8 @@
 
 {{#each threads}}
     <a class="item"
-       href="https://mail.google.com/mail/?authuser={{emailAddress}}#inbox/{{threadId}}">
+       href="https://mail.google.com/mail/?authuser={{../emailAddress}}#inbox/{{threadId}}"
+       data-thread-id="{{threadId}}">
         
         <span class="column {{#if isUnread}}highlight{{/if}}"
               title="{{snippet}}">
@@ -19,6 +20,10 @@
             {{else}}
                 {{from.email}}
             {{/if}}
+        </span>
+
+        <span class="hover-action-block">
+            <span class="action material-icons archive-thread" title="Archive">done_outline</span>
         </span>
     </a>
 {{else}}

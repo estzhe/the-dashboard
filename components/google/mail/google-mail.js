@@ -36,6 +36,19 @@ export default class GoogleMailComponent extends BaseComponent
         };
         
         container.innerHTML = await this._template("template", data);
+
+        for (const action of container.querySelectorAll(".item .action.archive-thread"))
+        {
+            action.addEventListener("click", async e =>
+            {
+                e.preventDefault();
+
+                const threadId = e.target.closest(".item").dataset.threadId;
+                await GoogleMailComponent.#archiveThread(threadId);
+
+                await this.render(container, /*refreshData*/ true);
+            });
+        }
     }
 
     async #getThreadsAndEmailAddress(refreshData)
@@ -103,6 +116,26 @@ export default class GoogleMailComponent extends BaseComponent
         });
 
         return threadFirstMessages;
+    }
+
+    static async #archiveThread(threadId)
+    {
+        Argument.notNullOrUndefinedOrEmpty(threadId, "threadId");
+        
+        const accessToken = await Google.getAccessToken(["https://www.googleapis.com/auth/gmail.modify"]);
+
+        await fetch(
+            `https://gmail.googleapis.com/gmail/v1/users/me/threads/${threadId}/modify`,
+            {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${accessToken}`
+                },
+                body: JSON.stringify({
+                    removeLabelIds: ["INBOX"],
+                }),
+            })
+        .then(response => response.json());
     }
 
     static #parseFrom(from)

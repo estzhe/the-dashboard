@@ -66,7 +66,7 @@ export default class GithubIssuesComponent extends BaseComponent
             }
         });
 
-        for (const item of container.querySelectorAll(".item"))
+        for (const item of elements.items)
         {
             item.addEventListener("click", async e =>
             {
