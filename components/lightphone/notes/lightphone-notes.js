@@ -171,7 +171,7 @@ export default class LightPhoneNotesComponent extends BaseComponent
                         timeUpdated,
                     };
                 })))
-                .sort((n1, n2) => n1.timeUpdated.localeCompare(n2.timeUpdated));
+                .sort((n1, n2) => n2.timeUpdated.localeCompare(n1.timeUpdated));
             },
             refreshData);
     }
