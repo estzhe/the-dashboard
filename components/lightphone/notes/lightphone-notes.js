@@ -154,7 +154,7 @@ export default class LightPhoneNotesComponent extends BaseComponent
                 {
                     // Through experimentation it was found out that attributes.updated_at is in UTC,
                     // but it does not have any timezone information attached to it, nor "Z" at the end.
-                    const timeUpdated = Temporal.Instant.from(note.attributes.updated_at + "Z");
+                    const timeUpdated = note.attributes.updated_at + "Z";
 
                     let text = null;
                     if (note.attributes.note_type === "text")
@@ -167,11 +167,11 @@ export default class LightPhoneNotesComponent extends BaseComponent
                         id: note.id,
                         type: note.attributes.note_type,    // audio|text
                         title: note.attributes.title === "Untitled" ? null : note.attributes.title,
-                        text: text,
-                        timeUpdated: timeUpdated,
+                        text,
+                        timeUpdated,
                     };
                 })))
-                .sort((n1, n2) => Temporal.Instant.compare(n2.timeUpdated, n1.timeUpdated));
+                .sort((n1, n2) => n1.timeUpdated.localeCompare(n2.timeUpdated));
             },
             refreshData);
     }
