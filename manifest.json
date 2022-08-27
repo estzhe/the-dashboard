@@ -6,7 +6,8 @@
     "permissions": [
         "identity",
         "geolocation",
-        "alarms"
+        "alarms",
+        "https://*/"
     ],
 
     "chrome_url_overrides": {

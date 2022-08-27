@@ -1,0 +1,140 @@
+{{#if title}}
+    <a href="https://dashboard.thelightphone.com/devices/{{deviceId}}/tools/notes/view" class="anchor-header">
+        <h1>{{title}}</h1>
+    </a>
+{{/if}}
+
+{{#each notes}}
+    <div class="item" data-id="{{id}}">
+        <span class="column {{#ifEquals type 'audio'}}audio-container{{/ifEquals}}">
+            {{#ifEquals type 'text'}}
+                {{#if title}}
+                    {{title}}
+                {{else}}
+                    <span style="white-space: pre-line">{{text}}</span>
+                {{/if}}
+            {{/ifEquals}}
+        </span>
+
+        {{#ifEquals type 'audio'}}
+            <span class="column" style="flex: 0 0 2rem; vertical-align: middle;">
+                <span class="download-button material-icons">
+                    south
+                </span>
+            </span>
+        {{/ifEquals}}
+
+        <span class="column" style="flex: 0 0 2rem; vertical-align: middle;">
+            <span class="done-button material-icons">
+                done
+            </span>
+        </span>
+    </div>
+{{else}}
+    No notes.
+{{/each}}
+
+<style>
+    [component="lightphone/notes"] .item
+    {
+        line-height: 1.5em;
+    }
+
+    [component="lightphone/notes"] .material-icons
+    {
+        font-size: 2em;
+    }
+
+    [component="lightphone/notes"] .download-button
+    {
+        cursor: pointer;
+        color: #555555;
+        font-size: 1.5em !important;
+    }
+
+        [component="lightphone/notes"] .download-button:hover
+        {
+            color: black;
+        }
+
+    [component="lightphone/notes"] .done-button
+    {
+        display: none;
+
+        cursor: pointer;
+        color: #555555;
+        font-size: 1.5em !important;
+        font-weight: bold;
+    }
+
+    [component="lightphone/notes"] .item:hover .done-button
+    {
+        display: inherit;
+    }
+
+        [component="lightphone/notes"] .done-button:hover
+        {
+            color: black;
+        }
+
+    .simple-audio-player
+    {
+        width: 100%;
+        display: flex;
+    }
+
+    .simple-audio-player .play-button
+    {
+        cursor: pointer;
+        color: #555555;
+    }
+
+        .simple-audio-player .play-button:hover
+        {
+            color: black;
+        }
+
+        .simple-audio-player input[type=range]
+        {
+            -webkit-appearance: none;
+            background: transparent;
+            cursor: pointer;
+
+            flex-grow: 1;
+            margin-right: 0.5em;
+        }
+
+            .simple-audio-player input[type=range]::-webkit-slider-thumb
+            {
+                -webkit-appearance: none;
+                display: none;
+                
+                width: 0.4em;
+                height: 0.4em;
+                border-radius: 50%;
+                margin-top: -0.15em;
+                background-color: #555555;
+            }
+
+            .simple-audio-player.loaded input[type=range]::-webkit-slider-thumb
+            {
+                display: inherit;
+            }
+
+                .simple-audio-player.loaded input[type=range]:hover::-webkit-slider-thumb
+                {
+                    background-color: black;
+                }
+
+            .simple-audio-player input[type=range]::-webkit-slider-runnable-track
+            {
+                width: 100%;
+                height: 1px;
+                background-color: #555555;
+            }
+
+                .simple-audio-player input[type=range]:hover::-webkit-slider-runnable-track
+                {
+                    background-color: black;
+                }
+</style>

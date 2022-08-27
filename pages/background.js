@@ -21,6 +21,17 @@ chrome.alarms.onAlarm.addListener(
     }
 );
 
+chrome.runtime.onMessage.addListener(
+    (message, sender, sendResponse) =>
+    {
+        if (message.type == "cors-bypass.lightphone.notes.fetch-text-note-content")
+        {
+            fetch(message.uri).then(_ => _.text()).then(_ => sendResponse(_));
+        }
+
+        return true;
+    });
+
 async function onRefreshData()
 {
     const dashboard = new Dashboard();

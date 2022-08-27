@@ -18,6 +18,8 @@ export default {
         options: './pages/options.js',
     },
 
+    devtool: 'eval-source-map',
+
     plugins: [
         new MonacoWebpackPlugin(),
     ],
@@ -34,4 +36,6 @@ export default {
             },
         ],
     },
+
+    watch: true,
 };
