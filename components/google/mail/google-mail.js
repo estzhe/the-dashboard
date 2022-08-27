@@ -37,17 +37,17 @@ export default class GoogleMailComponent extends BaseComponent
         
         container.innerHTML = await this._template("template", data);
 
-        for (const action of container.querySelectorAll(".item .action.archive-thread"))
+        for (const action of container.querySelectorAll(".archive-button"))
         {
-            action.addEventListener("click", async e =>
-            {
-                e.preventDefault();
+            action.addEventListener(
+                "click",
+                async e =>
+                {
+                    const threadId = e.target.closest(".item").dataset.threadId;
+                    await GoogleMailComponent.#archiveThread(threadId);
 
-                const threadId = e.target.closest(".item").dataset.threadId;
-                await GoogleMailComponent.#archiveThread(threadId);
-
-                await this.render(container, /*refreshData*/ true);
-            });
+                    await this.render(container, /*refreshData*/ true);
+                });
         }
     }
 

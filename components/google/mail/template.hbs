@@ -5,27 +5,30 @@
 {{/if}}
 
 {{#each threads}}
-    <a class="item"
-       href="https://mail.google.com/mail/?authuser={{../emailAddress}}#inbox/{{threadId}}"
-       data-thread-id="{{threadId}}">
+    <div class="item"
+         data-thread-id="{{threadId}}">
         
-        <span class="column {{#if isUnread}}highlight{{/if}}"
-              title="{{snippet}}">
+        <a class="column {{#if isUnread}}highlight{{/if}}"
+           href="https://mail.google.com/mail/?authuser={{../emailAddress}}#inbox/{{threadId}}"
+           title="{{snippet}}">
             {{subject}}
-        </span>
+        </a>
         
-        <span class="column" style="flex: 0 0 8rem" title="{{from.email}}">
+        <a class="column"
+           style="flex: 0 0 8rem"
+           href="https://mail.google.com/mail/?authuser={{../emailAddress}}#inbox/{{threadId}}"
+           title="{{from.email}}">
             {{#if from.displayName}}
                 {{from.displayName}}
             {{else}}
                 {{from.email}}
             {{/if}}
-        </span>
+        </a>
 
-        <span class="hover-action-block">
-            <span class="action material-icons archive-thread" title="Archive">done_outline</span>
+        <span class="column archive-button item-action material-icons">
+            done
         </span>
-    </a>
+    </div>
 {{else}}
     No emails today.
 {{/each}}

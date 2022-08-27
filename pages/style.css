@@ -80,8 +80,8 @@ th:empty
 .right { text-align: right; }
 
 .highlight { font-weight: 500; }
-.negative-attention { color: #ed4758; }
-.positive-attention { color: #00bf9c; }
+.negative-attention { color: #ed4758 !important; }
+.positive-attention { color: #00bf9c !important; }
 
 .components-container
 {
@@ -104,6 +104,11 @@ th:empty
         margin: 1rem;
         font-size: 0.8125rem;
         overflow: auto;
+    }
+
+    .components-container .material-icons
+    {
+        font-size: 2em;
     }
 
     .components-container .card::-webkit-scrollbar-track
@@ -155,6 +160,7 @@ th:empty
         {
             display: flex;
             text-decoration: none;
+            line-height: 1.5em;
             color: #151b26;
             border-bottom: 1px solid #e8ecee;
             padding: 0.3rem 0;
@@ -175,36 +181,29 @@ th:empty
             {
                 flex: 1 0;
                 margin-right: 0.2rem;
+                text-decoration: none;
+                color: #151b26;
             }
 
-        .components-container .card .item .hover-action-block
-        {
-            display: none;
-        }
-
-        .components-container .card .item:hover .hover-action-block
-        {
-            display: block;
-            position: absolute;
-            top: 0;
-            left: 0;
-
-            box-sizing: border-box;
-            height: 100%;
-
-            padding: 0.2em 0.5em 0 0.5em;
-
-            background-color: whitesmoke;
-        }
-
-            .components-container .card .item .hover-action-block .action
+            .components-container .card .item .item-action
             {
-                font-size: 1.5em;
-                color: rgba(0, 0, 0, 0.26);
-            }
-
-            .components-container .card .item .hover-action-block .action:hover
-            {
+                visibility: hidden;
+        
+                cursor: pointer;
+                color: #555555;
+                font-size: 1.5em !important;
                 font-weight: bold;
-                color: rgba(0, 0, 0, 0.54);
+
+                padding-top: 0.1em;
+                flex: 0 0 2rem;
             }
+    
+            .components-container .card .item:hover .item-action
+            {
+                visibility: visible;
+            }
+    
+                .components-container .card .item .item-action:hover
+                {
+                    color: black;
+                }

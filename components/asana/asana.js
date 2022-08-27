@@ -78,6 +78,19 @@ export default class AsanaComponent extends BaseComponent
         };
 
         container.innerHTML = await this._template("template", data);
+
+        for (const action of container.querySelectorAll(".done-button"))
+        {
+            action.addEventListener(
+                "click",
+                async e =>
+                {
+                    const taskId = e.target.closest(".item").dataset.taskId;
+                    await this.#markTaskCompleted(taskId);
+
+                    await this.render(container, /*refreshData*/ true);
+                });
+        }
     }
 
     async #getTasks(refreshData)
@@ -119,6 +132,30 @@ export default class AsanaComponent extends BaseComponent
                     tasksToday);
             },
             refreshData);
+    }
+
+    async #markTaskCompleted(taskId)
+    {
+        Argument.notNullOrUndefinedOrEmpty(taskId, "taskId");
+
+        const accessToken = AsanaComponent.#getPersonalAccessToken(this.#accountName);
+
+        await fetch(
+            `https://app.asana.com/api/1.0/tasks/${taskId}`,
+            {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                    "Authorization": `Bearer ${accessToken}`,
+                },
+                body: JSON.stringify({
+                    data: {
+                        completed: true,
+                    },
+                }),
+            }
+        )
     }
 
     static async #fetchSections(projectId, accessToken)

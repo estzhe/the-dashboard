@@ -5,22 +5,27 @@
 {{/if}}
 
 {{#each tasks}}
-    <a class="item"
-        href="https://app.asana.com/0/{{../projectId}}/{{gid}}/f"
-        title="{{notes}}">
+    <div class="item"
+         title="{{notes}}"
+         data-task-id="{{gid}}">
 
-        <span class="column {{#ifEquals section 'recently-assigned'}}negative-attention{{/ifEquals}}">
+        <a class="column {{#ifEquals section 'recently-assigned'}}negative-attention{{/ifEquals}}"
+           href="https://app.asana.com/0/{{../projectId}}/{{gid}}/f">
             {{name}}
-        </span>
+        </a>
 
         {{#if due_on}}
-            <span class="column {{#if is_past_due}}negative-attention{{/if}} {{#if is_due_today}}positive-attention{{/if}}"
-                  style="flex: 0 0 5rem;">
+            <a class="column {{#if is_past_due}}negative-attention{{/if}} {{#if is_due_today}}positive-attention{{/if}}"
+               href="https://app.asana.com/0/{{../projectId}}/{{gid}}/f"
+               style="flex: 0 0 5rem;">
                 {{readable-date due_on}}
-            </span>
+            </a>
         {{/if}}
-    
-    </a>
+
+        <span class="column done-button item-action material-icons">
+            done
+        </span>
+    </div>
 {{else}}
     No tasks for today!
 {{/each}}

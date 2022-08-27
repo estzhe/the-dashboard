@@ -17,17 +17,13 @@
         </span>
 
         {{#ifEquals type 'audio'}}
-            <span class="column" style="flex: 0 0 2rem; vertical-align: middle;">
-                <span class="download-button material-icons">
-                    south
-                </span>
+            <span class="column download-button item-action material-icons">
+                south
             </span>
         {{/ifEquals}}
 
-        <span class="column" style="flex: 0 0 2rem; vertical-align: middle;">
-            <span class="done-button material-icons">
-                done
-            </span>
+        <span class="column done-button item-action material-icons">
+            done
         </span>
     </div>
 {{else}}
@@ -35,48 +31,6 @@
 {{/each}}
 
 <style>
-    [component="lightphone/notes"] .item
-    {
-        line-height: 1.5em;
-    }
-
-    [component="lightphone/notes"] .material-icons
-    {
-        font-size: 2em;
-    }
-
-    [component="lightphone/notes"] .download-button
-    {
-        cursor: pointer;
-        color: #555555;
-        font-size: 1.5em !important;
-    }
-
-        [component="lightphone/notes"] .download-button:hover
-        {
-            color: black;
-        }
-
-    [component="lightphone/notes"] .done-button
-    {
-        display: none;
-
-        cursor: pointer;
-        color: #555555;
-        font-size: 1.5em !important;
-        font-weight: bold;
-    }
-
-    [component="lightphone/notes"] .item:hover .done-button
-    {
-        display: inherit;
-    }
-
-        [component="lightphone/notes"] .done-button:hover
-        {
-            color: black;
-        }
-
     .simple-audio-player
     {
         width: 100%;
