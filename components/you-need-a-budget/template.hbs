@@ -1,0 +1,23 @@
+{{#if title}}
+    <a href="https://app.youneedabudget.com/{{budgetId}}/accounts" class="anchor-header">
+        <h1>{{title}}</h1>
+    </a>
+{{/if}}
+
+{{#each transactions}}
+    <div class="item highlight" title="{{category}}">
+        <span class="column" style="flex: 0 0 5rem;">
+            {{readable-date date}}
+        </span>
+
+        <span class="column" style="flex: 0 0 5rem;">
+            {{amount}}
+        </span>
+
+        <span class="column">
+            {{payee}}
+        </span>
+    </div>
+{{else}}
+    No new transactions!
+{{/each}}
