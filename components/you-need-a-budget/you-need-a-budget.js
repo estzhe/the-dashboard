@@ -31,14 +31,14 @@ export default class YouNeedABudgetComponent extends BaseComponent
     {
         await super.render(container, refreshData);
 
-        const transactions = await this.#getTransactions(refreshData);
+        const transactions = await this.#getUnapprovedTransactions(refreshData);
         await this.#renderTransactions(container, transactions);
     }
 
     async refreshData()
     {
         await super.refreshData();
-        await this.#getTransactions(/* refreshData */ true);
+        await this.#getUnapprovedTransactions(/* refreshData */ true);
     }
 
     async #renderTransactions(container, transactions)
@@ -68,7 +68,7 @@ export default class YouNeedABudgetComponent extends BaseComponent
         container.innerHTML = await this._template("template", data);
     }
 
-    async #getTransactions(refreshData)
+    async #getUnapprovedTransactions(refreshData)
     {
         return await this._services.cache.get(
             "transactions",
@@ -76,23 +76,49 @@ export default class YouNeedABudgetComponent extends BaseComponent
             {
                 const accessToken = YouNeedABudgetComponent.#getPersonalAccessToken(this.#accountName);
 
-                const response = await fetch(
-                    `https://api.youneedabudget.com/v1/budgets/${this.#budgetId}/transactions` +
-                        `?type=unapproved`,
-                    {
-                        headers: { "Authorization": `Bearer ${accessToken}` },
-                    });
-                if (!response.ok)
-                {
-                    throw new Error(`Error while fetching transactions: ${response.status} ${response.statusText}`);
-                }
-            
-                const payload = await response.json();
-
-                return payload.data.transactions;
+                await this.#importNewTransactions(accessToken);
+                return await this.#fetchUnapprovedTransactions(accessToken);
             },
             refreshData);
     }
+
+    async #fetchUnapprovedTransactions(accessToken)
+    {
+        Argument.notNullOrUndefinedOrEmpty(accessToken, "accessToken");
+
+        const response = await fetch(
+            `https://api.youneedabudget.com/v1/budgets/${this.#budgetId}/transactions` +
+                `?type=unapproved`,
+            {
+                headers: { "Authorization": `Bearer ${accessToken}` },
+            });
+        if (!response.ok)
+        {
+            throw new Error(`Error while fetching transactions: ${response.status} ${response.statusText}`);
+        }
+    
+        const payload = await response.json();
+
+        return payload.data.transactions;
+    }
+
+    async #importNewTransactions(accessToken)
+    {
+        Argument.notNullOrUndefinedOrEmpty(accessToken, "accessToken");
+        
+        const response = await fetch(
+            `https://api.youneedabudget.com/v1/budgets/${this.#budgetId}/transactions/import`,
+            {
+                method: 'POST',
+                headers: { "Authorization": `Bearer ${accessToken}` },
+            });
+        if (!response.ok)
+        {
+            throw new Error(`Error while importing new transactions: ${response.status} ${response.statusText}`);
+        }
+    }
+
+    async 
 
     static #getPersonalAccessToken(accountName)
     {
