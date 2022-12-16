@@ -85,9 +85,9 @@ export default class GithubIssuesComponent extends BaseComponent
 
                 const data = {
                     issue,
-                    bodyHtml: marked(issue.body, { breaks: true }),
+                    bodyHtml: marked(issue.body ?? "", { breaks: true }),
                     comments: comments.map(c => ({
-                        bodyHtml: marked(c.body, { breaks: true})
+                        bodyHtml: marked(c.body ?? "", { breaks: true})
                     })),
                 };
 
