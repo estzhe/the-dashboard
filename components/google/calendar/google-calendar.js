@@ -163,7 +163,7 @@ export default class GoogleCalendarComponent extends BaseComponent
 
     async #getEvents(refreshData)
     {
-        return await this._services.cache.get(
+        return await this._services.cache.instance.get(
             "calendar-data",
             async () =>
             {

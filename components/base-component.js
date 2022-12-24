@@ -47,7 +47,10 @@ export default class BaseComponent
         this.#pathToComponent = pathToComponent;
         this.#services = Object.freeze({
             storage: localStorage,
-            cache: new ReadCache(options.id, localStorage),
+            cache: {
+                instance: new ReadCache("instance." + options.id, localStorage, navigator.locks),
+                component: new ReadCache("component." + pathToComponent, localStorage, navigator.locks),
+            },
         });
     }
 

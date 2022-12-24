@@ -53,7 +53,7 @@ export default class GoogleMailComponent extends BaseComponent
 
     async #getThreadsAndEmailAddress(refreshData)
     {
-        return await this._services.cache.get(
+        return await this._services.cache.instance.get(
             "emails",
             async () =>
             {

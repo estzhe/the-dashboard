@@ -57,7 +57,7 @@ export default class GithubMarkdownComponent extends BaseComponent
 
     async #getDocument(refreshData)
     {
-        return await this._services.cache.get(
+        return await this._services.cache.instance.get(
             "markdown",
             async () =>
             {

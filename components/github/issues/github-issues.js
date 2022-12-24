@@ -99,8 +99,8 @@ export default class GithubIssuesComponent extends BaseComponent
 
     async #getIssues(refreshData)
     {
-        return await this._services.cache.get(
-            "issues",
+        return await this._services.cache.component.get(
+            `${this.#repoInfo.owner}.${this.#repoInfo.repo}.issues`,
             async () =>
             {
                 const accessToken = Github.getPersonalAccessToken(this.#accountName);

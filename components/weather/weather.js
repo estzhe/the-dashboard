@@ -91,7 +91,7 @@ export default class WeatherComponent extends BaseComponent
 
     async #getData(refreshData)
     {
-        return await this._services.cache.get(
+        return await this._services.cache.instance.get(
             "data",
             async () =>
             {

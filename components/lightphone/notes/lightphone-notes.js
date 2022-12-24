@@ -92,7 +92,7 @@ export default class LightPhoneNotesComponent extends BaseComponent
 
     async #getNotes(refreshData)
     {
-        return await this._services.cache.get(
+        return await this._services.cache.instance.get(
             "notes",
             async () =>
             {

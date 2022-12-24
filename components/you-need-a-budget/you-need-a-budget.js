@@ -70,7 +70,7 @@ export default class YouNeedABudgetComponent extends BaseComponent
 
     async #getUnapprovedTransactions(refreshData)
     {
-        return await this._services.cache.get(
+        return await this._services.cache.instance.get(
             "transactions",
             async() =>
             {

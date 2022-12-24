@@ -95,7 +95,7 @@ export default class AsanaComponent extends BaseComponent
 
     async #getTasks(refreshData)
     {
-        return await this._services.cache.get(
+        return await this._services.cache.instance.get(
             "tasks",
             async() =>
             {
