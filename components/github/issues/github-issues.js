@@ -44,9 +44,19 @@ export default class GithubIssuesComponent extends BaseComponent
         issues = GithubIssuesComponent.#filterIssues(issues, this.#filter);
         issues = issues.sort((i1, i2) => i2.updated_at.localeCompare(i1.updated_at));   // recent first
 
+        let filterQuery = "is:open is:issue";
+        if (this.#filter.include.length !== 0)
+        {
+            filterQuery += " " + this.#filter.include.map(tag => `label:${tag}`).join(" ");
+        }
+        if (this.#filter.exclude.length !== 0)
+        {
+            filterQuery += " " + this.#filter.exclude.map(tag => `-label:${tag}`).join(" ");
+        }
+
         const data = {
             title: this.#title,
-            url: `https://github.com/${this.#repoInfo.owner}/${this.#repoInfo.repo}/issues`,
+            url: `https://github.com/${this.#repoInfo.owner}/${this.#repoInfo.repo}/issues?q=${encodeURIComponent(filterQuery)}`,
             issues,
         };
 
