@@ -68,21 +68,24 @@ export default class GithubIssuesComponent extends BaseComponent
             items: container.querySelectorAll(".item"),
         };
 
-        elements.title.addEventListener("click", e =>
+        if (elements.title)
         {
-            if (e.altKey)
+            elements.title.addEventListener("click", e =>
             {
-                e.preventDefault();
-
-                let newIssueUri = `https://github.com/${this.#repoInfo.owner}/${this.#repoInfo.repo}/issues/new`;
-                if (this.#filter.include.length !== 0)
+                if (e.altKey)
                 {
-                    newIssueUri += "?labels=" + encodeURIComponent(this.#filter.include.join(","));
+                    e.preventDefault();
+
+                    let newIssueUri = `https://github.com/${this.#repoInfo.owner}/${this.#repoInfo.repo}/issues/new`;
+                    if (this.#filter.include.length !== 0)
+                    {
+                        newIssueUri += "?labels=" + encodeURIComponent(this.#filter.include.join(","));
+                    }
+                    
+                    window.location.href = newIssueUri;
                 }
-                
-                window.location.href = newIssueUri;
-            }
-        });
+            });
+        }
 
         elements.dialog.addEventListener("keydown", e =>
         {

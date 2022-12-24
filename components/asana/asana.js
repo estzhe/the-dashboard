@@ -24,14 +24,9 @@ export default class AsanaComponent extends BaseComponent
             throw new Error("asana: 'project-id' attribute is required.");
         }
 
-        if (!options.sectionRecentlyAssigned)
+        if (!options.sectionRecentlyAssigned && !options.sectionToday)
         {
-            throw new Error("asana: 'section-recently-assigned' attribute is required.");
-        }
-
-        if (!options.sectionToday)
-        {
-            throw new Error("asana: 'section-today' attribute is required.");
+            throw new Error("asana: at least one of 'section-recently-assigned' and 'section-today' attributes is required.");
         }
 
         this.#title = options.title;
@@ -103,33 +98,43 @@ export default class AsanaComponent extends BaseComponent
                 
                 const sections = await AsanaComponent.#fetchSections(this.#projectId, accessToken);
                 
-                const sectionRecentlyAssigned = sections.find(
-                    s => s.name.localeCompare(this.#sectionRecentlyAssigned, undefined, { sensitivity: "accent" }) === 0 );
-                if (sectionRecentlyAssigned === undefined)
+                const tasks = [];
+
+                if (this.#sectionRecentlyAssigned)
                 {
-                    throw new Error(
-                        `asana: no section for recently assigned tasks found ` +
-                        `with name '${this.#sectionRecentlyAssigned}'.`);
+                    const sectionRecentlyAssigned = sections.find(
+                        s => s.name.localeCompare(this.#sectionRecentlyAssigned, undefined, { sensitivity: "accent" }) === 0 );
+                    if (sectionRecentlyAssigned === undefined)
+                    {
+                        throw new Error(
+                            `asana: no section for recently assigned tasks found ` +
+                            `with name '${this.#sectionRecentlyAssigned}'.`);
+                    }
+
+                    const tasksRecentlyAssigned = await AsanaComponent.#fetchSectionTasks(sectionRecentlyAssigned.gid, accessToken);
+                    tasksRecentlyAssigned.forEach(t => t.section = "recently-assigned");
+
+                    tasks.push(...tasksRecentlyAssigned);
                 }
 
-                const sectionToday = sections.find(
-                    s => s.name.localeCompare(this.#sectionToday, undefined, { sensitivity: "accent" }) === 0 );
-                if (sectionToday === undefined)
+                if (this.#sectionToday)
                 {
-                    throw new Error(
-                        `asana: no section for today's tasks found ` +
-                        `with name '${this.#sectionToday}'.`);
+                    const sectionToday = sections.find(
+                        s => s.name.localeCompare(this.#sectionToday, undefined, { sensitivity: "accent" }) === 0 );
+                    if (sectionToday === undefined)
+                    {
+                        throw new Error(
+                            `asana: no section for today's tasks found ` +
+                            `with name '${this.#sectionToday}'.`);
+                    }
+
+                    const tasksToday = await AsanaComponent.#fetchSectionTasks(sectionToday.gid, accessToken);
+                    tasksToday.forEach(t => t.section = "today");
+
+                    tasks.push(...tasksToday);
                 }
 
-                const tasksRecentlyAssigned = await AsanaComponent.#fetchSectionTasks(sectionRecentlyAssigned.gid, accessToken);
-                tasksRecentlyAssigned.forEach(t => t.section = "recently-assigned");
-
-                const tasksToday = await AsanaComponent.#fetchSectionTasks(sectionToday.gid, accessToken);
-                tasksToday.forEach(t => t.section = "today");
-
-                return [].concat(
-                    tasksRecentlyAssigned,
-                    tasksToday);
+                return tasks;
             },
             refreshData);
     }
