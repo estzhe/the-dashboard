@@ -63,9 +63,26 @@ export default class GithubIssuesComponent extends BaseComponent
         container.innerHTML = await this._template("template", data);
 
         const elements = {
+            title: container.querySelector(".issues-title"),
             dialog: container.querySelector("dialog.issue-viewer"),
             items: container.querySelectorAll(".item"),
         };
+
+        elements.title.addEventListener("click", e =>
+        {
+            if (e.altKey)
+            {
+                e.preventDefault();
+
+                let newIssueUri = `https://github.com/${this.#repoInfo.owner}/${this.#repoInfo.repo}/issues/new`;
+                if (this.#filter.include.length !== 0)
+                {
+                    newIssueUri += "?labels=" + encodeURIComponent(this.#filter.include.join(","));
+                }
+                
+                window.location.href = newIssueUri;
+            }
+        });
 
         elements.dialog.addEventListener("keydown", e =>
         {
