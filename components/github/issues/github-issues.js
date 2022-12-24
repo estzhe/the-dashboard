@@ -47,7 +47,7 @@ export default class GithubIssuesComponent extends BaseComponent
         let filterQuery = "is:open is:issue";
         if (this.#filter.include.length !== 0)
         {
-            filterQuery += " " + this.#filter.include.map(tag => `label:${tag}`).join(" ");
+            filterQuery += " label:" + this.#filter.include.join(",");
         }
         if (this.#filter.exclude.length !== 0)
         {
