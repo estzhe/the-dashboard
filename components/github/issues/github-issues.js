@@ -82,7 +82,7 @@ export default class GithubIssuesComponent extends BaseComponent
                         newIssueUri += "?labels=" + encodeURIComponent(this.#filter.include.join(","));
                     }
                     
-                    window.location.href = newIssueUri;
+                    window.open(newIssueUri, "_blank").focus();
                 }
             });
         }
