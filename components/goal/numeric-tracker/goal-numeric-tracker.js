@@ -1,7 +1,7 @@
 import Argument from '/lib/argument.js';
+import DailyStore from '/lib/daily-store.js';
 import BaseComponent from '/components/base-component.js';
 import Charts from '/components/goal/charts.js';
-import GoalTrackerStore from '/components/goal/goal-tracker-store.js';
 import { Temporal } from '@js-temporal/polyfill';
 
 export default class GoalNumericTrackerComponent extends BaseComponent
@@ -17,9 +17,32 @@ export default class GoalNumericTrackerComponent extends BaseComponent
     #ignoreSkippedDays;
 
     /**
-     * @type GoalTrackerStore<number>
+     * @type {DailyStore<number>}
      */
     #store;
+
+    /**
+     * @returns {Temporal.PlainDate}
+     */
+    get #trackingStartDate()
+    {
+        const serialized = this._services.storage.getItem(
+            `goal-numeric-tracker-component.${this.id}.tracking-start-date`);
+        return serialized ? Temporal.PlainDate.from(serialized) : null;
+    }
+
+    /**
+     * @param {Temporal.PlainDate} date
+     */
+    set #trackingStartDate(date)
+    {
+        Argument.notNullOrUndefined(date, "date");
+        Argument.isInstanceOf(date, Temporal.PlainDate, "date");
+
+        this._services.storage.setItem(
+            `goal-numeric-tracker-component.${this.id}.tracking-start-date`,
+            date.toJSON());
+    }
 
     constructor(pathToComponent, options)
     {
@@ -50,10 +73,10 @@ export default class GoalNumericTrackerComponent extends BaseComponent
         this.#visibleWindowDays = parseInt(options.visibleWindowDays);
         this.#ignoreSkippedDays = options.ignoreSkippedDays === "true";
 
-        this.#store = new GoalTrackerStore(this._services.storage, `goal-numeric-tracker-component.${this.id}`);
-        if (!this.#store.trackingStartDate)
+        this.#store = new DailyStore(this._services.storage, `goal-numeric-tracker-component.${this.id}`);
+        if (!this.#trackingStartDate)
         {
-            this.#store.trackingStartDate = Temporal.Now.plainDateISO();
+            this.#trackingStartDate = Temporal.Now.plainDateISO();
         }
     }
 
@@ -186,7 +209,7 @@ export default class GoalNumericTrackerComponent extends BaseComponent
         const values = [];
 
         for (
-            let date = this.#store.trackingStartDate;
+            let date = this.#trackingStartDate;
             Temporal.PlainDate.compare(date, targetDate) <= 0;
             date = date.add({ days: 1 }))
         {

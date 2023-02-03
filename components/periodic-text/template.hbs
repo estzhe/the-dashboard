@@ -1,0 +1,29 @@
+<div class="view {{#unless html}}clickable{{/unless}}">
+    {{#if title}}
+        <h1>{{title}}</h1>
+    {{/if}}
+
+    {{#if html}}
+        <a class="card-action material-icons edit" href="">
+            edit
+        </a>
+    {{/if}}
+
+    <div class="text {{#unless html}}negative-attention{{/unless}}">
+        {{#if html}}
+            {{{html}}}
+        {{else}}
+            Haven't written anything today. Click to edit.
+        {{/if}}
+    </div>
+</div>
+
+<dialog class="editor" style="width: 90%; height: 70%;">
+</dialog>
+
+<style>
+    .view.clickable
+    {
+        cursor: pointer;
+    }
+</style>

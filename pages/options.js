@@ -37,14 +37,14 @@ document.addEventListener("DOMContentLoaded", async () =>
 
     document.addEventListener("keydown", e =>
     {
-        if (e.ctrlKey && e.key === "s" ||
-            e.ctrlKey && e.key == "Enter")
+        if (e.ctrlKey && e.code === "KeyS" ||
+            e.ctrlKey && e.code == "Enter")
         {
             e.preventDefault();
             elements.saveButton.click();
         }
 
-        if (e.key == "Escape")
+        if (e.code == "Escape")
         {
             e.preventDefault();
             elements.cancelButton.click();

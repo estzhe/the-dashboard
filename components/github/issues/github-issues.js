@@ -89,7 +89,7 @@ export default class GithubIssuesComponent extends BaseComponent
 
         elements.dialog.addEventListener("keydown", e =>
         {
-            if (e.key === "Escape")
+            if (e.code === "Escape")
             {
                 e.preventDefault();
                 elements.dialog.close();

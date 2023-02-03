@@ -3,18 +3,9 @@ import { marked } from 'marked';
 
 export default class MarkdownTextComponent extends BaseComponent
 {
-    #id;
-
     constructor(pathToComponent, options)
     {
         super(pathToComponent, options);
-
-        if (!options.id)
-        {
-            throw new Error("markdown-text: 'id' attribute is required.");
-        }
-
-        this.#id = options.id;
     }
 
     async render(container, refreshData)
@@ -70,8 +61,8 @@ export default class MarkdownTextComponent extends BaseComponent
 
         elements.editorDialog.addEventListener("keydown", e =>
         {
-            if (e.ctrlKey && e.key === "s" ||
-                e.ctrlKey && e.key == "Enter")
+            if (e.ctrlKey && e.code === "KeyS" ||
+                e.ctrlKey && e.code == "Enter")
             {
                 e.preventDefault();
                 elements.saveButton.click();
@@ -81,12 +72,12 @@ export default class MarkdownTextComponent extends BaseComponent
 
     #loadText()
     {
-        return this._services.storage.getItem(`markdown-text.text.${this.#id}`);
+        return this._services.storage.getItem(`markdown-text.text.${this.id}`);
     }
 
     #saveText(value)
     {
-        this._services.storage.setItem(`markdown-text.text.${this.#id}`, value);
+        this._services.storage.setItem(`markdown-text.text.${this.id}`, value);
     }
 }
 
