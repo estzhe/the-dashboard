@@ -108,8 +108,8 @@ export default class GoogleMailComponent extends BaseComponent
 
             return {
                 threadId: firstMessage.threadId,
-                from: GoogleMailComponent.#parseFrom(headers.From),
-                subject: headers.Subject,
+                from: GoogleMailComponent.#parseFrom(headers.From || headers.from),
+                subject: headers.Subject || headers.subject,
                 snippet: (firstUnreadMessage ?? firstMessage).snippet,
                 isUnread: firstUnreadMessage !== undefined,
             };
