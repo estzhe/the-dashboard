@@ -97,8 +97,16 @@ export default class LightPhoneNotesComponent extends BaseComponent
             async () =>
             {
                 const accessToken = LightPhoneNotesComponent.#getAccessToken(this.#accountName);
+
+                const devices = await LightPhoneNotesComponent.#fetchDevices(accessToken);
+                const matchingDevice = devices.data.find(d => d.id === this.#deviceId);
+                if (matchingDevice === null)
+                {
+                    throw new Error(
+                        `Device with id '${this.#deviceId}' is not listed in the account.`);
+                }
                 
-                const tools = await LightPhoneNotesComponent.#fetchTools(accessToken);
+                const tools = await LightPhoneNotesComponent.#fetchTools(accessToken, this.#deviceId);
                 const matchingNoteTools = tools.data.filter(
                     t => t.attributes.namespace === "notes" &&
                          t.attributes.component === "Notes");
@@ -117,14 +125,6 @@ export default class LightPhoneNotesComponent extends BaseComponent
                 }
 
                 const notesTool = matchingNoteTools[0];
-
-                const devices = await LightPhoneNotesComponent.#fetchDevices(accessToken);
-                const matchingDevice = devices.data.find(d => d.id === this.#deviceId);
-                if (matchingDevice === null)
-                {
-                    throw new Error(
-                        `Device with id '${this.#deviceId}' is not listed in the account.`);
-                }
 
                 const matchingToolInstallations = devices.included.filter(
                     included => included.type === "device_tools" &&
@@ -291,14 +291,14 @@ export default class LightPhoneNotesComponent extends BaseComponent
 
     /**
      * Fetches information about all tools supported by the Light Phone.
-     * This is not specific to any particular device.
      */
-    static async #fetchTools(accessToken)
+    static async #fetchTools(accessToken, deviceId)
     {
         Argument.notNullOrUndefinedOrEmpty(accessToken, "accessToken");
+        Argument.notNullOrUndefinedOrEmpty(deviceId, "deviceId");
 
         return await fetch(
-            `https://production.lightphonecloud.com/api/tools`,
+            `https://production.lightphonecloud.com/api/tools?device_id=${deviceId}`,
             {
                 headers: {
                     "Authorization": `Bearer ${accessToken}`,
