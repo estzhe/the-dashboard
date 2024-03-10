@@ -49,7 +49,7 @@ export default class Charts
             {
                 width: container.clientWidth,
                 height: height,
-                priceScale: {
+                rightPriceScale: {
                     autoScale: false,
                     borderVisible: false,
                     scaleMargins: {
@@ -83,6 +83,8 @@ export default class Charts
                 timeScale: {
                     borderVisible: false,
                     fixLeftEdge: true,
+                    fixRightEdge: true,
+                    allowBoldLabels: false,
                 },
             });
         
