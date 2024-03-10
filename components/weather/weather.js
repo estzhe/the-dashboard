@@ -31,7 +31,7 @@ export default class WeatherComponent extends BaseComponent
 
         for (const h of data.hourly)
         {
-            const dateTime = Temporal.Instant.fromEpochSeconds(h.dt).toZonedDateTimeISO(Temporal.Now.timeZone());
+            const dateTime = Temporal.Instant.fromEpochSeconds(h.dt).toZonedDateTimeISO(Temporal.Now.timeZoneId());
             h.displayTime = dateTime.hour % 2 === 0
                 ? dateTime
                     .toLocaleString(undefined /* current locale */, { hour: "numeric", hourCycle: "h12" })

@@ -66,7 +66,6 @@ export default class GoogleCalendarComponent extends BaseComponent
         await super.render(container, refreshData);
 
         const calendarData = await this.#getEvents(refreshData);
-        console.log(calendarData);
         await this.#renderEvents(container, calendarData);
     }
 
@@ -91,20 +90,20 @@ export default class GoogleCalendarComponent extends BaseComponent
                 {
                     event.start = Temporal.PlainDate.from(event.start.date)
                         .toZonedDateTime({
-                            timeZone: Temporal.Now.timeZone(),
+                            timeZone: Temporal.Now.timeZoneId(),
                             plainTime: Temporal.PlainTime.from("00:00:00"),
                         });
                     event.end = Temporal.PlainDate.from(event.end.date)
                         .subtract({ days: 1 })
                         .toZonedDateTime({
-                            timeZone: Temporal.Now.timeZone(),
+                            timeZone: Temporal.Now.timeZoneId(),
                             plainTime: Temporal.PlainTime.from("23:59:59"),
                         });
                 }
                 else
                 {
-                    event.start = Temporal.Instant.from(event.start.dateTime).toZonedDateTimeISO(Temporal.Now.timeZone());
-                    event.end = Temporal.Instant.from(event.end.dateTime).toZonedDateTimeISO(Temporal.Now.timeZone());
+                    event.start = Temporal.Instant.from(event.start.dateTime).toZonedDateTimeISO(Temporal.Now.timeZoneId());
+                    event.end = Temporal.Instant.from(event.end.dateTime).toZonedDateTimeISO(Temporal.Now.timeZoneId());
                 }
 
                 return event;
@@ -216,11 +215,11 @@ export default class GoogleCalendarComponent extends BaseComponent
         Argument.notNullOrUndefined(endDateTime, "endDateTime");
         Argument.notNullOrUndefinedOrEmpty(accessToken, "accessToken");
 
-        if (startDateTime.timeZone.id !== endDateTime.timeZone.id)
+        if (startDateTime.timeZoneId !== endDateTime.timeZoneId)
         {
             throw new Error(
-                `Timezones of startDateTime (${startDateTime.timeZone.id}) and `+
-                `endDateTime (${endDateTime.timeZone.id}) are expected to match.`);
+                `Timezones of startDateTime (${startDateTime.timeZoneId}) and `+
+                `endDateTime (${endDateTime.timeZoneId}) are expected to match.`);
         }
 
         const response = await fetch(
@@ -228,7 +227,7 @@ export default class GoogleCalendarComponent extends BaseComponent
                 `?singleEvents=true` +
                 `&timeMin=${startDateTime.toString({ timeZoneName: "never" })}` +
                 `&timeMax=${endDateTime.toString({ timeZoneName: "never" })}` +
-                `&timeZone=${encodeURIComponent(startDateTime.timeZone.id)}`,
+                `&timeZone=${encodeURIComponent(startDateTime.timeZoneId)}`,
             {
                 headers: {
                     "Authorization": `Bearer ${accessToken}`

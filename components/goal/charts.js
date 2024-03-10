@@ -170,7 +170,9 @@ export default class Charts
             const chartWidth = chartOptions.width;
             const chartHeight = chartOptions.height;
 
-            if (!e.time ||
+            const nextDataPoint = e.seriesData.values().next();
+
+            if (nextDataPoint.done ||
                 e.point.x < 0 || e.point.x > chartWidth ||
                 e.point.y < 0 || e.point.y > chartHeight)
             {
@@ -178,20 +180,8 @@ export default class Charts
                 return;
             }
 
-            const date = LightweightCharts.isBusinessDay(e.time)
-                ? Temporal.PlainDate.from(e.time)
-                // It looks like in some cases lightweight-charts converts passed date strings
-                // into seconds since epoch and returns that here instead of a BusinessDay object.
-                // We assume that the conversion happened this way:
-                //      plain date
-                //          -> add time = 00:00, time zone UTC and treat as zoned date time
-                //          -> seconds since epoch (UTC)
-                // Here we do the reverse.
-                : Temporal
-                    .Instant.fromEpochSeconds(e.time)
-                    .toZonedDateTimeISO(new Temporal.TimeZone("UTC"))
-                    .toPlainDate();
-            const value = valueFormatter(e.seriesPrices.values().next().value);
+            const date = Temporal.PlainDate.from(nextDataPoint.value.time);
+            const value = valueFormatter(nextDataPoint.value.value);
 
             tooltip.innerHTML = `
                 <div style='margin: 1px 0px;'>

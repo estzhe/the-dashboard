@@ -27,7 +27,7 @@ async function onLoad()
         dashboard.lastDataRefreshDate !== null
             ? ReadableTemporalFormat.plainDateTimeToString(
                 dashboard.lastDataRefreshDate
-                         .toZonedDateTimeISO(Temporal.Now.timeZone())
+                         .toZonedDateTimeISO(Temporal.Now.timeZoneId())
                          .toPlainDateTime())
             : "never";
 }
@@ -42,7 +42,7 @@ async function onRefreshClick(e)
         dashboard.lastDataRefreshDate !== null
             ? ReadableTemporalFormat.plainDateTimeToString(
                 dashboard.lastDataRefreshDate
-                         .toZonedDateTimeISO(Temporal.Now.timeZone())
+                         .toZonedDateTimeISO(Temporal.Now.timeZoneId())
                          .toPlainDateTime())
             : "never";
 }
