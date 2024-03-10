@@ -8,36 +8,43 @@
     <h2>{{readable-date date}}</h2>
 
     {{#each events}}
-        <a class="item" href="{{{uri}}}" title="{{notes}}">
+        <div class="item" title="{{notes}}">
 
-            <span class="column right" style="flex: 0 0 2rem">
+            <a class="column right" style="flex: 0 0 2rem" href="{{{uri}}}">
                 {{#if showStartTime}}
                     {{time startDateTime}}
                 {{/if}}
-            </span>
+            </a>
 
-            <span class="column center" style="flex: 0 0 1rem">
+            <a class="column center" style="flex: 0 0 1rem" href="{{{uri}}}">
                 {{#unless isFullDay}}
                     —
                 {{/unless}}
-            </span>
+            </a>
 
-            <span class="column right" style="flex: 0 0 2rem;">
+            <a class="column right" style="flex: 0 0 2rem;" href="{{{uri}}}">
                 {{#if showEndTime}}
                     {{time endDateTime}}
                 {{/if}}
-            </span>
+            </a>
 
-            <span class="column"
-                  style="color: {{{calendar.color}}}; flex: 0 0 0.1rem; margin-left: 0.5rem;"
-                  title="{{calendar.name}}">
+            <a class="column"
+               style="color: {{{calendar.color}}}; flex: 0 0 0.1rem; margin-left: 0.5rem;"
+               title="{{calendar.name}}"
+               href="{{{uri}}}">
                   〣
-            </span>
+            </a>
 
-            <span class="column" style="margin-left: 0.5rem;">
+            <a class="column" style="margin-left: 0.5rem;" href="{{{uri}}}">
                 {{title}}
-            </span>
-        </a>
+            </a>
+
+            {{#if videoConferenceUri}}
+                <span class="column right" style="flex: 0 0 5rem;">
+                    <a href="{{{videoConferenceUri}}}">video</a>
+                </span>
+            {{/if}}
+        </div>
     {{else}}
         No events on this date.
     {{/each}}

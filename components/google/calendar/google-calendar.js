@@ -66,6 +66,7 @@ export default class GoogleCalendarComponent extends BaseComponent
         await super.render(container, refreshData);
 
         const calendarData = await this.#getEvents(refreshData);
+        console.log(calendarData);
         await this.#renderEvents(container, calendarData);
     }
 
@@ -127,10 +128,22 @@ export default class GoogleCalendarComponent extends BaseComponent
                     const endIsOnThisDay = date.equals(e.end);
                     const isFullDay = e.isFullDay || !startIsOnThisDay && !endIsOnThisDay;
 
+                    let videoConferenceUri = null;
+                    if (e.conferenceData !== null && e.conferenceData !== undefined)
+                    {
+                        const videoEntryPoint = e.conferenceData.entryPoints.find(p => p.entryPointType === "video");
+                        if (videoEntryPoint !== undefined)
+                        {
+                            videoConferenceUri = videoEntryPoint.uri;
+                        }
+                    }
+
                     return {
                         title: e.summary,
                         uri: e.htmlLink,
                         notes: e.notes,
+
+                        videoConferenceUri,
 
                         isFullDay,
                         showStartTime: !isFullDay && startIsOnThisDay,
