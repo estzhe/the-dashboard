@@ -111,7 +111,7 @@ export default class WeatherComponent extends BaseComponent
         const startDate = Temporal.Now.plainDateISO();
         const endDate = startDate.add({ days: 2 }); // today + tomorrow + the day after tomorrow
 
-        const currentHour = Temporal.Now.plainDateTimeISO().round("hour");
+        const currentHour = Temporal.Now.plainDateTimeISO().round({ smallestUnit: "hour", roundingMode: "floor" });
 
         return forecastData.hourly.time
             .map((time, i) => {
@@ -135,7 +135,7 @@ export default class WeatherComponent extends BaseComponent
                         .replace(" ", "")
                         .toLowerCase()
                     : "";
-                const isCurrentHour = dateTime.toPlainDateTime().round("hour").equals(currentHour);
+                const isCurrentHour = dateTime.toPlainDateTime().round({ smallestUnit: "hour", roundingMode: "floor" }).equals(currentHour);
                 const isFirstHourOfTheDay = dateTime.hour === 0;
 
                 return {
