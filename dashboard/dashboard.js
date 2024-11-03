@@ -98,14 +98,25 @@ export default class Dashboard
         }
 
         await Promise.all(components.map(
-            component =>
+            async component =>
             {
                 // TODO: Not good, this needs to be part of component or layout logic.
                 //       In future: each component should be split into two parts:
                 //       view and data source. View would be coupled with container,
                 //       while data source would be responsible for fetching data.
                 const container = targetContainer.querySelector(`[id='${component.id}']`);
-                return component.render(container, refreshData);
+                
+                try
+                {
+                    await component.render(container, refreshData);
+                    container.classList.remove("failed");
+                    container.removeAttribute("title");
+                }
+                catch (e)
+                {
+                    container.classList.add("failed");
+                    container.setAttribute("title", e.toString());
+                }
             }
         ));
     }

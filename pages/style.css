@@ -207,3 +207,11 @@ th:empty
                 {
                     color: black;
                 }
+
+.component {
+    box-sizing: border-box;
+}
+
+.component.failed {
+    border: 1px solid red;
+}
