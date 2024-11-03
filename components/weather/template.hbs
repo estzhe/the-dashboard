@@ -5,7 +5,7 @@
 
     <div style="display: flex; width: 100%; font-size: 80%">
         {{#each .}}
-            <span style="flex: 1 0; {{#ifEquals displayTime "00"}}font-weight: bold;{{/ifEquals}}">
+            <span style="flex: 1 0; {{#if isFirstHourOfTheDay}}font-weight: bold;{{/if}} {{#if isCurrentHour}}border-bottom: 1px dotted black;{{/if}}">
                 {{displayTime}}
             </span>
         {{/each}}

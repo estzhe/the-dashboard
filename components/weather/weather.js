@@ -111,6 +111,8 @@ export default class WeatherComponent extends BaseComponent
         const startDate = Temporal.Now.plainDateISO();
         const endDate = startDate.add({ days: 2 }); // today + tomorrow + the day after tomorrow
 
+        const currentHour = Temporal.Now.plainDateTimeISO().round("hour");
+
         return forecastData.hourly.time
             .map((time, i) => {
                 // We request data in GMT, but Open-Meteo returns times without offset.
@@ -133,10 +135,14 @@ export default class WeatherComponent extends BaseComponent
                         .replace(" ", "")
                         .toLowerCase()
                     : "";
+                const isCurrentHour = dateTime.toPlainDateTime().round("hour").equals(currentHour);
+                const isFirstHourOfTheDay = dateTime.hour === 0;
 
                 return {
                     dateTime,
                     displayTime,
+                    isCurrentHour,
+                    isFirstHourOfTheDay,
                     temperature_2m: forecastData.hourly.temperature_2m[i],
                     rain: forecastData.hourly.rain[i],
                     showers: forecastData.hourly.showers[i],
