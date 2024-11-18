@@ -93,7 +93,7 @@ export default class WeatherComponent extends BaseComponent
 
                 const forecast = WeatherComponent.#distillForecast(results[0]);
                 const stats = WeatherComponent.#distillStats(results[1]);
-                
+
                 return {
                     forecast,
                     stats,
@@ -109,7 +109,7 @@ export default class WeatherComponent extends BaseComponent
         // There is no way to filter by exact date and time, so we get extra records
         // that need to be filtered out.
         const startDate = Temporal.Now.plainDateISO();
-        const endDate = startDate.add({ days: 2 }); // today + tomorrow + the day after tomorrow
+        const endDate = startDate;
 
         const currentHour = Temporal.Now.plainDateTimeISO().round({ smallestUnit: "hour", roundingMode: "floor" });
 
@@ -129,20 +129,16 @@ export default class WeatherComponent extends BaseComponent
                     return null;
                 }
 
-                const displayTime = dateTime.hour % 2 === 0
-                    ? dateTime
-                        .toLocaleString(undefined /* current locale */, { hour: "numeric", hourCycle: "h23" })
-                        .replace(" ", "")
-                        .toLowerCase()
-                    : "";
                 const isCurrentHour = dateTime.toPlainDateTime().round({ smallestUnit: "hour", roundingMode: "floor" }).equals(currentHour);
-                const isFirstHourOfTheDay = dateTime.hour === 0;
-
+                const displayTime = dateTime
+                    .toLocaleString(undefined /* current locale */, { hour: "numeric", hourCycle: "h23" })
+                    .replace(" ", "")
+                    .toLowerCase();
+                
                 return {
                     dateTime,
                     displayTime,
                     isCurrentHour,
-                    isFirstHourOfTheDay,
                     temperature_2m: forecastData.hourly.temperature_2m[i],
                     rain: forecastData.hourly.rain[i],
                     showers: forecastData.hourly.showers[i],
@@ -171,7 +167,8 @@ export default class WeatherComponent extends BaseComponent
             `?latitude=${location.latitude}` +
             `&longitude=${location.longitude}` +
             `&hourly=temperature_2m,rain,showers,snowfall,cloud_cover` +
-            `&forecast_days=4`);
+            `&past_days=1` +
+            `&forecast_days=2`);
 
         return await response.json();
     }
