@@ -1,0 +1,162 @@
+import Argument from '/lib/argument.js';
+import BaseComponent from '/components/base-component.js';
+import { Temporal } from '@js-temporal/polyfill';
+
+export default class TodoistComponent extends BaseComponent
+{
+    #title;
+    #accountName;
+    #filter;
+    
+    constructor(pathToComponent, options)
+    {
+        super(pathToComponent, options);
+
+        if (!options.account)
+        {
+            throw new Error("todoist: 'account' attribute is required.");
+        }
+
+        if (!options.filter)
+        {
+            throw new Error("todoist: 'filter' attribute is required.");
+        } 
+
+        this.#title = options.title;
+        this.#accountName = options.account;
+        this.#filter = options.filter;
+    }
+
+    async render(container, refreshData)
+    {
+        await super.render(container, refreshData);
+
+        const tasks = await this.#getTasks(refreshData);
+        await this.#renderTasks(container, tasks);
+    }
+
+    async refreshData()
+    {
+        await super.refreshData();
+        await this.#getTasks(/* refreshData */ true);
+    }
+
+    async #renderTasks(container, tasks)
+    {
+        tasks = tasks
+            .map(task =>
+            {
+                if (task.due?.date)
+                {
+                    const parsed = Temporal.PlainDate.from(task.due.date);
+    
+                    task.due.parsed = parsed;
+                    task.is_past_due = Temporal.PlainDate.compare(parsed, Temporal.Now.plainDateISO()) < 0;
+                    task.is_due_today = Temporal.PlainDate.compare(parsed, Temporal.Now.plainDateISO()) === 0;
+                }
+    
+                return task;
+            })
+            .sort((t1, t2) =>
+            {
+                let d = (t1.is_past_due ? -1 : 0) - (t2.is_past_due ? -1 : 0);
+                if (d !== 0)
+                {
+                    return d;
+                }
+                
+                return t1.child_order - t2.child_order;
+            });
+
+        const data = {
+            title: this.#title,
+            filterUriEncoded: encodeURIComponent(this.#filter),
+            tasks,
+        };
+
+        container.innerHTML = await this._template("template", data);
+        
+        for (const action of container.querySelectorAll(".done-button"))
+        {
+            action.addEventListener(
+                "click",
+                async e =>
+                {
+                    const taskId = e.target.closest(".item").dataset.taskId;
+                    await this.#markTaskCompleted(taskId);
+
+                    await this.render(container, /*refreshData*/ true);
+                });
+        }
+    }
+    
+    async #getTasks(refreshData)
+    {
+        return await this._services.cache.instance.get(
+            "tasks",
+            async() =>
+            {
+                const accessToken = TodoistComponent.#getPersonalAccessToken(this.#accountName);
+                return await TodoistComponent.#fetchTasks(this.#filter, accessToken);
+            },
+            refreshData);
+    }
+
+    static async #fetchTasks(filter, accessToken)
+    {
+        Argument.notNullOrUndefinedOrEmpty(filter, "filter");
+        Argument.notNullOrUndefinedOrEmpty(accessToken, "accessToken");
+
+        const response = await fetch(
+            `https://api.todoist.com/api/v1/tasks/filter?query=${encodeURIComponent(filter)}`,
+            {
+                headers: {
+                    "Accept": "application/json",
+                    "Authorization": `Bearer ${accessToken}`,
+                }
+            })
+            .then(_ => _.json());
+
+        return response.results;
+    }
+
+    async #markTaskCompleted(taskId)
+    {
+        Argument.notNullOrUndefinedOrEmpty(taskId, "taskId");
+
+        const accessToken = TodoistComponent.#getPersonalAccessToken(this.#accountName);
+
+        await fetch(
+            `https://api.todoist.com/api/v1/tasks/${taskId}/close`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                    "Authorization": `Bearer ${accessToken}`,
+                },
+            }
+        )
+    }
+
+    static #getPersonalAccessToken(accountName)
+    {
+        Argument.notNullOrUndefinedOrEmpty(accountName, "accountName");
+
+        const key = `todoist.accounts.${accountName}`;
+
+        let token = localStorage.getItem(key);
+        if (!token)
+        {
+            token = prompt(`Please enter personal access token for Todoist account ${accountName}`);
+            if (!token)
+            {
+                throw new Error("A personal access token was not provided by user.");
+            }
+
+            localStorage.setItem(key, token);
+        }
+
+        return token;
+    }
+}
