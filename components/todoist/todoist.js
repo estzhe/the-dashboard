@@ -70,7 +70,7 @@ export default class TodoistComponent extends BaseComponent
 
         const data = {
             title: this.#title,
-            filterUriEncoded: encodeURIComponent(this.#filter),
+            filter: this.#filter,
             tasks,
         };
 
