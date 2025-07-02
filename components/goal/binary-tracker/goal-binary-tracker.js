@@ -9,6 +9,7 @@ export default class GoalBinaryTrackerComponent extends BaseComponent
     #title;
     #unit;
     #precision;
+    #width;
     #height;
     #yMin;
     #yMax;
@@ -72,6 +73,7 @@ export default class GoalBinaryTrackerComponent extends BaseComponent
         this.#title = options.title;
         this.#unit = options.unit;
         this.#precision = parseInt(options.precision ?? "1");
+        this.#width = parseInt(options.width ?? "250");
         this.#height = parseInt(options.height ?? "200");
         this.#yMin = parseFloat(options.yMin);
         this.#yMax = parseFloat(options.yMax);
@@ -222,12 +224,13 @@ export default class GoalBinaryTrackerComponent extends BaseComponent
 
         Charts.renderLineChart(
             elements.chart,
+            this.#width,
             this.#height,
             this.#yMin,
             this.#yMax,
-            this.#visibleWindowDays,    // xWidthInDataPoints
             this.#goal,
-            value => value.toFixed(this.#precision) + this.#unit,   // valueFormatter
+            "Rate",
+            `.${this.#precision}f`,
             successRates);
     }
 

@@ -9,6 +9,7 @@ export default class GoalNumericTrackerComponent extends BaseComponent
     #title;
     #unit;
     #precision;
+    #width;
     #height;
     #yMin;
     #yMax;
@@ -66,6 +67,7 @@ export default class GoalNumericTrackerComponent extends BaseComponent
         this.#title = options.title;
         this.#unit = options.unit;
         this.#precision = parseInt(options.precision ?? "1");
+        this.#width = parseInt(options.width ?? "250");
         this.#height = parseInt(options.height ?? "200");
         this.#yMin = parseFloat(options.yMin);
         this.#yMax = parseFloat(options.yMax);
@@ -125,7 +127,7 @@ export default class GoalNumericTrackerComponent extends BaseComponent
                 e.preventDefault();
 
                 let value = elements.todaysValueInput.value === "" ? null : Number(elements.todaysValueInput.value);
-                if (value === NaN || !this.#ignoreSkippedDays && value === null)
+                if (isNaN(value) || !this.#ignoreSkippedDays && value === null)
                 {
                     elements.todaysValueInput.style.border = "1px solid red";
                     return;
@@ -149,7 +151,7 @@ export default class GoalNumericTrackerComponent extends BaseComponent
             elements.historyEditorDialog.querySelector(".editable-elements-container").addEventListener("change", e =>
             {
                 if (!e.target.classList.contains("editable-element")) return;
-                if (Number(e.target.value) === NaN) return;
+                if (isNaN(Number(e.target.value))) return;
 
                 e.preventDefault();
 
@@ -173,12 +175,13 @@ export default class GoalNumericTrackerComponent extends BaseComponent
 
         Charts.renderLineChart(
             elements.chart,
+            this.#width,
             this.#height,
             this.#yMin,
             this.#yMax,
-            this.#visibleWindowDays,    // xWidthInDataPoints
             this.#goal,
-            value => value === undefined || value === null ? "-" : value.toFixed(this.#precision) + this.#unit,   // valueFormatter
+            "Value",
+            `.${this.#precision}f`,
             entries);
     }
 

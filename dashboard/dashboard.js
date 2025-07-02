@@ -116,6 +116,8 @@ export default class Dashboard
                 {
                     container.classList.add("failed");
                     container.setAttribute("title", e.toString());
+                    
+                    console.error(`Failed to render component ${component.id}`, e);
                 }
             }
         ));

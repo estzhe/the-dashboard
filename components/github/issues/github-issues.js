@@ -22,7 +22,9 @@ export default class GithubIssuesComponent extends BaseComponent
         this.#accountName = options.account;
         this.#repoInfo = GithubIssuesComponent.#parseRepoUri(options.repo);
         this.#title = options.title;
-        this.#filter = options.filter ? GithubIssuesComponent.#parseFilterString(options.filter) : null;
+        this.#filter = options.filter
+            ? GithubIssuesComponent.#parseFilterString(options.filter)
+            : { include: [], exclude: [] };
     }
 
     async render(container, refreshData)
