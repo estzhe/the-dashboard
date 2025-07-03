@@ -9,7 +9,7 @@
         <span class="column {{#ifEquals type 'audio'}}audio-container{{/ifEquals}}">
             {{#ifEquals type 'text'}}
                 {{#if title}}
-                    {{title}}
+                    <span title="{{text}}">{{title}}</span>
                 {{else}}
                     <span style="white-space: pre-line">{{text}}</span>
                 {{/if}}
