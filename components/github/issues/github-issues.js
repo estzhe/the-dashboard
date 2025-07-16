@@ -214,6 +214,8 @@ export default class GithubIssuesComponent extends BaseComponent
         }
         while (commentsOnPage.length >= MAX_COMMENTS_PER_PAGE);
 
+        console.log(comments);
+        
         return comments;
     }
 
@@ -267,7 +269,7 @@ export default class GithubIssuesComponent extends BaseComponent
         {
             if (expression.startsWith("-"))
             {
-                if (expression.length == 1)
+                if (expression.length === 1)
                 {
                     throw new Error("An exclusion filtering expression must include a tag to exclude after '-' character.");
                 }
