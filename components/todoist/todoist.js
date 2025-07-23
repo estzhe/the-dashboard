@@ -64,6 +64,12 @@ export default class TodoistComponent extends BaseComponent
                 {
                     return d;
                 }
+
+                d = (t1.day_order ?? Number.MAX_SAFE_INTEGER) - (t2.day_order ?? Number.MAX_SAFE_INTEGER);
+                if (d !== 0)
+                {
+                    return d;
+                }
                 
                 return t1.child_order - t2.child_order;
             });
