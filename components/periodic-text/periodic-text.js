@@ -2,6 +2,8 @@ import DailyStore from '/lib/daily-store.js';
 import BaseComponent from '/components/base-component.js';
 import { marked } from 'marked';
 import { Temporal } from '@js-temporal/polyfill';
+import template from '/components/periodic-text/template.hbs';
+import editorTemplate from '/components/periodic-text/editor.hbs';
 
 export default class PeriodicTextComponent extends BaseComponent
 {
@@ -39,9 +41,9 @@ export default class PeriodicTextComponent extends BaseComponent
 
         const data = {
             title: this.#title,
-            html: markdownToHtml(this.#readTodaysMarkdown() ?? ""),
+            html: markdownToHtml(await this.#readTodaysMarkdown() ?? ""),
         }; 
-        container.innerHTML = await this._template("template", data);
+        container.innerHTML = template(data);
 
         const elements = {
             container: container,
@@ -61,16 +63,16 @@ export default class PeriodicTextComponent extends BaseComponent
         });
     }
 
-    #readTodaysMarkdown()
+    async #readTodaysMarkdown()
     {
         const today = Temporal.Now.plainDateISO();
-        return this.#store.getValue(today);
+        return await this.#store.getValue(today);
     }
 
-    #saveTodaysMarkdown(markdown)
+    async #saveTodaysMarkdown(markdown)
     {
         const today = Temporal.Now.plainDateISO();
-        this.#store.setValue(today, markdown);
+        await this.#store.setValue(today, markdown);
     }
 
     /**
@@ -78,13 +80,13 @@ export default class PeriodicTextComponent extends BaseComponent
      * 
      * @param {number} count
      * 
-     * @returns {{ date: Temporal.PlainDate, value: TValue }[]}
+     * @returns {Promise<{ date: Temporal.PlainDate, value: TValue }[]>}
      */
-    #readRecentEntries(count)
+    async #readRecentEntries(count)
     {
         const today = Temporal.Now.plainDateISO();
         
-        let recent = this.#store.getRecentItems(count + 1);
+        let recent = await this.#store.getRecentItems(count + 1);
         if (recent.length > 0 && recent[0].date.equals(today))
         {
             recent = recent.slice(1);
@@ -100,7 +102,7 @@ export default class PeriodicTextComponent extends BaseComponent
 
     async #renderEditor(editorDialog, saveCallback)
     {
-        const markdown = this.#readTodaysMarkdown() ?? "";
+        const markdown = await this.#readTodaysMarkdown() ?? "";
         
         const data = {
             today: {
@@ -108,7 +110,7 @@ export default class PeriodicTextComponent extends BaseComponent
                 html: markdownToHtml(markdown),
             },
             recentItemsToShowInHistory: this.#recentItemsToShowInHistory,
-            pastItems: this.#readRecentEntries(this.#recentItemsToShowInHistory)
+            pastItems: (await this.#readRecentEntries(this.#recentItemsToShowInHistory))
                            .map(e => ({
                                date: e.date,
                                markdown: e.value,
@@ -116,7 +118,7 @@ export default class PeriodicTextComponent extends BaseComponent
                            })),
         };
 
-        editorDialog.innerHTML = await this._template("editor", data);
+        editorDialog.innerHTML = editorTemplate(data);
 
         const elements = {
             editorDialog: editorDialog,
@@ -127,11 +129,11 @@ export default class PeriodicTextComponent extends BaseComponent
             history: editorDialog.querySelector(".history"),
         };
 
-        elements.saveButton.addEventListener("click", () =>
+        elements.saveButton.addEventListener("click", async () =>
         {
             const newMarkdown = elements.textarea.value;
 
-            this.#saveTodaysMarkdown(newMarkdown);
+            await this.#saveTodaysMarkdown(newMarkdown);
             
             saveCallback(newMarkdown);
             elements.editorDialog.close();

@@ -1,7 +1,7 @@
 import Argument from '/lib/argument.js';
 import BaseComponent from '/components/base-component.js';
 import SimpleAudioPlayer from '/components/lightphone/simple-audio-player.js';
-import { Temporal } from '@js-temporal/polyfill';
+import template from '/components/lightphone/notes/template.hbs';
 
 export default class LightPhoneNotesComponent extends BaseComponent
 {
@@ -50,7 +50,7 @@ export default class LightPhoneNotesComponent extends BaseComponent
             notes,
         };
 
-        container.innerHTML = await this._template("template", data);
+        container.innerHTML = template(data);
 
         for (const noteContainer of container.querySelectorAll(".item"))
         {
@@ -61,7 +61,8 @@ export default class LightPhoneNotesComponent extends BaseComponent
             {
                 const getUriAsync = async () =>
                 {
-                    const accessToken = LightPhoneNotesComponent.#getAccessToken(this.#accountName);
+                    const accessToken = await LightPhoneNotesComponent.#getAccessToken(
+                        this._services.storage, this.#accountName);
                     return LightPhoneNotesComponent.#fetchNoteFileUri(noteId, accessToken);
                 };
 
@@ -82,7 +83,8 @@ export default class LightPhoneNotesComponent extends BaseComponent
                 "click",
                 async () =>
                 {
-                    const accessToken = LightPhoneNotesComponent.#getAccessToken(this.#accountName);
+                    const accessToken = await LightPhoneNotesComponent.#getAccessToken(
+                        this._services.storage, this.#accountName);
                     await LightPhoneNotesComponent.#deleteNote(noteId, accessToken);
     
                     await this.render(container, /*refreshData*/ true);
@@ -96,7 +98,8 @@ export default class LightPhoneNotesComponent extends BaseComponent
             "notes",
             async () =>
             {
-                const accessToken = LightPhoneNotesComponent.#getAccessToken(this.#accountName);
+                const accessToken = await LightPhoneNotesComponent.#getAccessToken(
+                    this._services.storage, this.#accountName);
 
                 const devices = await LightPhoneNotesComponent.#fetchDevices(accessToken);
                 const matchingDevice = devices.data.find(d => d.id === this.#deviceId);
@@ -111,7 +114,7 @@ export default class LightPhoneNotesComponent extends BaseComponent
                     t => t.attributes.namespace === "notes" &&
                          t.attributes.component === "Notes");
 
-                if (matchingNoteTools.length == 0)
+                if (matchingNoteTools.length === 0)
                 {
                     throw new Error(
                         "The notes tool was not returned by the 'tools' endpoint.");
@@ -307,13 +310,14 @@ export default class LightPhoneNotesComponent extends BaseComponent
             .then(_ => _.json());
     }
 
-    static #getAccessToken(accountName)
+    static async #getAccessToken(storage, accountName)
     {
+        Argument.notNullOrUndefined(storage, "storage");
         Argument.notNullOrUndefinedOrEmpty(accountName, "accountName");
         
         const key = `lightphone.accounts.${accountName}`;
 
-        let token = localStorage.getItem(key);
+        let token = await storage.getItem(key);
         if (!token)
         {
             token = prompt(`Please enter an access token for LightPhone account ${accountName}`);
@@ -322,7 +326,7 @@ export default class LightPhoneNotesComponent extends BaseComponent
                 throw new Error("An access token was not provided by user.");
             }
 
-            localStorage.setItem(key, token);
+            await storage.setItem(key, token);
         }
 
         return token;

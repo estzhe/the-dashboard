@@ -1,6 +1,7 @@
 import Argument from '/lib/argument.js';
 import BaseComponent from '/components/base-component.js';
 import { Temporal } from '@js-temporal/polyfill';
+import template from '/components/todoist/template.hbs';
 
 export default class TodoistComponent extends BaseComponent
 {
@@ -80,7 +81,7 @@ export default class TodoistComponent extends BaseComponent
             tasks,
         };
 
-        container.innerHTML = await this._template("template", data);
+        container.innerHTML = template(data);
         
         for (const action of container.querySelectorAll(".done-button"))
         {
@@ -102,7 +103,8 @@ export default class TodoistComponent extends BaseComponent
             "tasks",
             async() =>
             {
-                const accessToken = TodoistComponent.#getPersonalAccessToken(this.#accountName);
+                const accessToken = await TodoistComponent.#getPersonalAccessToken(
+                    this._services.storage, this.#accountName);
                 return await TodoistComponent.#fetchTasks(this.#filter, accessToken);
             },
             refreshData);
@@ -130,7 +132,8 @@ export default class TodoistComponent extends BaseComponent
     {
         Argument.notNullOrUndefinedOrEmpty(taskId, "taskId");
 
-        const accessToken = TodoistComponent.#getPersonalAccessToken(this.#accountName);
+        const accessToken = await TodoistComponent.#getPersonalAccessToken(
+            this._services.storage, this.#accountName);
 
         await fetch(
             `https://api.todoist.com/api/v1/tasks/${taskId}/close`,
@@ -145,13 +148,14 @@ export default class TodoistComponent extends BaseComponent
         )
     }
 
-    static #getPersonalAccessToken(accountName)
+    static async #getPersonalAccessToken(storage, accountName)
     {
+        Argument.notNullOrUndefined(storage, "storage");
         Argument.notNullOrUndefinedOrEmpty(accountName, "accountName");
 
         const key = `todoist.accounts.${accountName}`;
 
-        let token = localStorage.getItem(key);
+        let token = await storage.getItem(key);
         if (!token)
         {
             token = prompt(`Please enter personal access token for Todoist account ${accountName}`);
@@ -160,7 +164,7 @@ export default class TodoistComponent extends BaseComponent
                 throw new Error("A personal access token was not provided by user.");
             }
 
-            localStorage.setItem(key, token);
+            await storage.setItem(key, token);
         }
 
         return token;

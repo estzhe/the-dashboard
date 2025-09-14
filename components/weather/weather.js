@@ -2,6 +2,7 @@ import Argument from '/lib/argument.js';
 import BaseComponent from '/components/base-component.js';
 import WeatherGraphics from '/components/weather/weather-graphics.js';
 import { Temporal } from '@js-temporal/polyfill';
+import template from '/components/weather/template.hbs';
 
 export default class WeatherComponent extends BaseComponent
 {
@@ -29,7 +30,7 @@ export default class WeatherComponent extends BaseComponent
         Argument.notNullOrUndefined(container, "container");
         Argument.notNullOrUndefined(data, "data");
 
-        container.innerHTML = await this._template("template", data.forecast);
+        container.innerHTML = template(data.forecast);
 
         const elements = {
             temperatureCanvas: container.querySelector(".temperature"),

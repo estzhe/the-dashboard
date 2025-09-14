@@ -2,6 +2,7 @@ import Argument from '/lib/argument.js';
 import Google from '/components/google/google.js';
 import BaseComponent from '/components/base-component.js';
 import { Temporal } from '@js-temporal/polyfill';
+import template from '/components/google/calendar/template.hbs';
 
 // TODO: we need to be more explicit about time zones:
 //          - explicit display time zone (with validation that the time zone
@@ -170,7 +171,7 @@ export default class GoogleCalendarComponent extends BaseComponent
             eventsByDate,
         };
         
-        container.innerHTML = await this._template("template", data);
+        container.innerHTML = template(data);
     }
 
     async #getEvents(refreshData)

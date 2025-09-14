@@ -1,6 +1,7 @@
 import Argument from '/lib/argument.js';
 import BaseComponent from '/components/base-component.js';
 import { Temporal } from '@js-temporal/polyfill';
+import template from '/components/asana/template.hbs';
 
 export default class AsanaComponent extends BaseComponent
 {
@@ -72,7 +73,7 @@ export default class AsanaComponent extends BaseComponent
             tasks,
         };
 
-        container.innerHTML = await this._template("template", data);
+        container.innerHTML = template(data);
 
         for (const action of container.querySelectorAll(".done-button"))
         {
@@ -94,7 +95,7 @@ export default class AsanaComponent extends BaseComponent
             "tasks",
             async() =>
             {
-                const accessToken = AsanaComponent.#getPersonalAccessToken(this.#accountName);
+                const accessToken = await AsanaComponent.#getPersonalAccessToken(this._services.storage, this.#accountName);
                 
                 const sections = await AsanaComponent.#fetchSections(this.#projectId, accessToken);
                 
@@ -203,13 +204,14 @@ export default class AsanaComponent extends BaseComponent
         return response.data;
     }
 
-    static #getPersonalAccessToken(accountName)
+    static async #getPersonalAccessToken(storage, accountName)
     {
+        Argument.notNullOrUndefined(storage, "storage");
         Argument.notNullOrUndefinedOrEmpty(accountName, "accountName");
         
         const key = `asana.accounts.${accountName}`;
 
-        let token = localStorage.getItem(key);
+        let token = await storage.getItem(key);
         if (!token)
         {
             token = prompt(`Please enter personal access token for Asana account ${accountName}`);
@@ -218,7 +220,7 @@ export default class AsanaComponent extends BaseComponent
                 throw new Error("A personal access token was not provided by user.");
             }
 
-            localStorage.setItem(key, token);
+            await storage.setItem(key, token);
         }
 
         return token;

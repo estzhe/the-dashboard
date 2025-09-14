@@ -3,6 +3,8 @@ import DailyStore from '/lib/daily-store.js';
 import BaseComponent from '/components/base-component.js';
 import Charts from '/components/goal/charts.js';
 import { Temporal } from '@js-temporal/polyfill';
+import template from '/components/goal/numeric-tracker/template.hbs';
+import historyEditorTemplate from '/components/goal/numeric-tracker/history-editor.hbs';
 
 export default class GoalNumericTrackerComponent extends BaseComponent
 {
@@ -23,26 +25,20 @@ export default class GoalNumericTrackerComponent extends BaseComponent
     #store;
 
     /**
-     * @returns {Temporal.PlainDate}
+     * @returns {Promise<Temporal.PlainDate>}
      */
-    get #trackingStartDate()
+    async #getTrackingStartDate()
     {
-        const serialized = this._services.storage.getItem(
-            `goal-numeric-tracker-component.${this.id}.tracking-start-date`);
-        return serialized ? Temporal.PlainDate.from(serialized) : null;
-    }
-
-    /**
-     * @param {Temporal.PlainDate} date
-     */
-    set #trackingStartDate(date)
-    {
-        Argument.notNullOrUndefined(date, "date");
-        Argument.isInstanceOf(date, Temporal.PlainDate, "date");
-
-        this._services.storage.setItem(
-            `goal-numeric-tracker-component.${this.id}.tracking-start-date`,
-            date.toJSON());
+        const key = `goal-numeric-tracker-component.${this.id}.tracking-start-date`;
+        
+        let serialized = await this._services.storage.getItem(key);
+        if (!serialized)
+        {
+            await this._services.storage.setItem(key, Temporal.Now.plainDateISO().toJSON());
+            serialized = await this._services.storage.getItem(key);
+        }
+        
+        return Temporal.PlainDate.from(serialized);
     }
 
     constructor(pathToComponent, options)
@@ -76,10 +72,6 @@ export default class GoalNumericTrackerComponent extends BaseComponent
         this.#ignoreSkippedDays = options.ignoreSkippedDays === "true";
 
         this.#store = new DailyStore(this._services.storage, `goal-numeric-tracker-component.${this.id}`);
-        if (!this.#trackingStartDate)
-        {
-            this.#trackingStartDate = Temporal.Now.plainDateISO();
-        }
     }
 
     async render(container, refreshData)
@@ -89,12 +81,12 @@ export default class GoalNumericTrackerComponent extends BaseComponent
         const today = Temporal.Now.plainDateISO();
         const yesterday = Temporal.Now.plainDateISO().subtract({ days: 1 });
 
-        const hasEntryForToday = this.#store.getValue(today) !== undefined;
+        const hasEntryForToday = await this.#store.getValue(today) !== undefined;
 
-        const entries = this.#getEntriesUntilDate(
+        const entries = (await this.#getEntriesUntilDate(
             today,
             /* includeDaysWithoutValue */ !this.#ignoreSkippedDays
-        ).slice(-this.#visibleWindowDays);
+        )).slice(-this.#visibleWindowDays);
 
         let currentEntry = entries.length > 0
             ? entries.reduce((a, b) => Temporal.PlainDate.compare(a.date, b.date) > 0 ? a : b)
@@ -110,7 +102,7 @@ export default class GoalNumericTrackerComponent extends BaseComponent
             needTodaysEntry: !hasEntryForToday,
         };
 
-        container.innerHTML = await this._template("template", data);
+        container.innerHTML = template(data);
 
         const elements = {
             chart: container.querySelector(".chart"),
@@ -133,7 +125,7 @@ export default class GoalNumericTrackerComponent extends BaseComponent
                     return;
                 }
 
-                this.#setEntry(today, value);
+                await this.#setEntry(today, value);
                 await this.render(container, /* refreshData */ false);
             });
         }
@@ -142,13 +134,13 @@ export default class GoalNumericTrackerComponent extends BaseComponent
         {
             e.preventDefault();
 
-            const historyEntries = this.#getEntriesUntilDate(
+            const historyEntries = (await this.#getEntriesUntilDate(
                 today,
                 /*includeDaysWithoutValue */ true
-            ).sort((a, b) => Temporal.PlainDate.compare(a.date, b.date) > 0 ? -1 : 1);
+            )).sort((a, b) => Temporal.PlainDate.compare(a.date, b.date) > 0 ? -1 : 1);
 
-            elements.historyEditorDialog.innerHTML = await this._template("history-editor", { entries: historyEntries });
-            elements.historyEditorDialog.querySelector(".editable-elements-container").addEventListener("change", e =>
+            elements.historyEditorDialog.innerHTML = historyEditorTemplate({ entries: historyEntries });
+            elements.historyEditorDialog.querySelector(".editable-elements-container").addEventListener("change", async e =>
             {
                 if (!e.target.classList.contains("editable-element")) return;
                 if (isNaN(Number(e.target.value))) return;
@@ -158,7 +150,7 @@ export default class GoalNumericTrackerComponent extends BaseComponent
                 const date = Temporal.PlainDate.from(e.target.dataset.date);
                 const value = e.target.value === "" ? null : Number(e.target.value);
 
-                this.#setEntry(date, value);
+                await this.#setEntry(date, value);
                 elements.historyEditorDialog.dataset.haveValuesChanged = true;
             });
 
@@ -189,21 +181,21 @@ export default class GoalNumericTrackerComponent extends BaseComponent
      * @param {Temporal.PlainDate} date
      * @param {number} value
      */
-    #setEntry(date, value)
+    async #setEntry(date, value)
     {
-        this.#store.setValue(date, value);
+        await this.#store.setValue(date, value);
     }
 
     /**
      * @param {Temporal.PlainDate} targetDate
      * @param {boolean} includeDaysWithoutValue
      * 
-     * @returns {{
+     * @returns {Promise<{
      *      date: Temporal.PlainDate,
      *      value: number
-     * }[]}
+     * }[]>}
      */
-    #getEntriesUntilDate(targetDate, includeDaysWithoutValue)
+    async #getEntriesUntilDate(targetDate, includeDaysWithoutValue)
     {
         Argument.notNullOrUndefined(targetDate, "targetDate");
         Argument.isInstanceOf(targetDate, Temporal.PlainDate, "targetDate");
@@ -212,11 +204,11 @@ export default class GoalNumericTrackerComponent extends BaseComponent
         const values = [];
 
         for (
-            let date = this.#trackingStartDate;
+            let date = await this.#getTrackingStartDate();
             Temporal.PlainDate.compare(date, targetDate) <= 0;
             date = date.add({ days: 1 }))
         {
-            const value = this.#store.getValue(date);
+            const value = await this.#store.getValue(date);
             if ((value === undefined || value === null) && !includeDaysWithoutValue)
             {
                 continue;

@@ -13,12 +13,12 @@ export default {
     },
 
     entry: {
-        background: './pages/background.js',
+        "service-worker": './pages/service-worker.js',
         newtab: './pages/newtab.js',
         options: './pages/options.js',
     },
 
-    devtool: 'eval-source-map',
+    devtool: 'source-map',
 
     plugins: [
         new MonacoWebpackPlugin(),
@@ -33,6 +33,18 @@ export default {
             {
                 test: /\.ttf$/,
                 use: ['file-loader'],
+            },
+            {
+                test: /\.hbs$/,
+                loader: 'handlebars-loader',
+                options: {
+                    precompileOptions: {
+                        knownHelpersOnly: false,
+                    },
+                    helperDirs: [
+                        path.resolve(currentDirectoryPath, 'lib/handlebars-helpers'),
+                    ],
+                }
             },
         ],
     },

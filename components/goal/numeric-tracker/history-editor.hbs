@@ -8,9 +8,9 @@
                 <td>
                     <input
                         type="number"
-                        data-date="{{toString date}}"
+                        data-date="{{to-string date}}"
                         class="editable-element"
-                        {{#ifEquals value 0}}value="0"{{/ifEquals}}
+                        {{#if-equals value 0}}value="0"{{/if-equals}}
                         {{#if value}}value="{{value}}"{{/if}} />
                 </td>
             </tr>

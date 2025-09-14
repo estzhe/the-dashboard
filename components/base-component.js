@@ -1,7 +1,6 @@
 import Argument from '/lib/argument.js';
+import ChromeLocalStorage from '/lib/chrome-local-storage.js';
 import ReadCache from '/lib/read-cache.js';
-import Handlebars from 'handlebars';
-import '/lib/handlebars-helpers.js';
 
 export default class BaseComponent
 {
@@ -17,7 +16,7 @@ export default class BaseComponent
 
     /**
      * @type {{
-     *      storage: {Storage},
+     *      storage: {ChromeLocalStorage},
      *      cache: {ReadCache},
      * }}
      */
@@ -42,13 +41,15 @@ export default class BaseComponent
             throw new Error("Component options must have a unique 'id' property.");
         }
         
+        const storage = new ChromeLocalStorage();
+        
         this.#id = options.id;
         this.#pathToComponent = pathToComponent;
         this.#services = Object.freeze({
-            storage: localStorage,
+            storage: storage,
             cache: {
-                instance: new ReadCache("instance." + options.id, localStorage, navigator.locks),
-                component: new ReadCache("component." + pathToComponent, localStorage, navigator.locks),
+                instance: new ReadCache("instance." + options.id, storage, navigator.locks),
+                component: new ReadCache("component." + pathToComponent, storage, navigator.locks),
             },
         });
     }
@@ -86,27 +87,9 @@ export default class BaseComponent
 
     /**
      * @type {{
-     *      storage: {Storage},
+     *      storage: {ChromeLocalStorage},
      *      cache: {ReadCache},
      * }}
      */
     get _services() { return this.#services; }
-
-    /**
-     * Returns a template with substitutions from `data`.
-     * 
-     * @param {string} name 
-     * @param {object} data
-     */
-    async _template(name, data)
-    {
-        Argument.notNullOrUndefinedOrEmpty(name, "name");
-
-        const request = await fetch(`${this._pathToComponent}/${name}.hbs`);
-
-        const templateText = await request.text();
-        const template = Handlebars.compile(templateText);
-        
-        return template(data);
-    }
 }

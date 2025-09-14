@@ -2,6 +2,7 @@ import Github from '/components/github/github.js';
 import Argument from '/lib/argument.js';
 import BaseComponent from '/components/base-component.js';
 import { marked } from 'marked';
+import template from '/components/github/markdown/template.hbs';
 
 export default class GithubMarkdownComponent extends BaseComponent
 {
@@ -52,7 +53,7 @@ export default class GithubMarkdownComponent extends BaseComponent
                 }),
         };
         
-        container.innerHTML = await this._template("template", data);
+        container.innerHTML = template(data);
     }
 
     async #getDocument(refreshData)
@@ -61,7 +62,7 @@ export default class GithubMarkdownComponent extends BaseComponent
             "markdown",
             async () =>
             {
-                const accessToken = Github.getPersonalAccessToken(this.#accountName);
+                const accessToken = await Github.getPersonalAccessToken(this._services.storage, this.#accountName);
 
                 return await GithubMarkdownComponent.#fetchDocument(
                     this.#documentInfo, accessToken);

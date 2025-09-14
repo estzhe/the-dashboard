@@ -9,7 +9,7 @@
          title="{{notes}}"
          data-task-id="{{gid}}">
 
-        <a class="column {{#ifEquals section 'recently-assigned'}}negative-attention{{/ifEquals}}"
+        <a class="column {{#if-equals section 'recently-assigned'}}negative-attention{{/if-equals}}"
            href="https://app.asana.com/0/{{../projectId}}/{{gid}}/f">
             {{name}}
         </a>

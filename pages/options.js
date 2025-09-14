@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", async () =>
     const editor = Monaco.editor.create(
         elements.layoutEditor,
         {
-            value: dashboard.getLayout(),
+            value: await dashboard.getLayout(),
             language: 'html',
             minimap: {
                 enabled: false,
@@ -38,13 +38,13 @@ document.addEventListener("DOMContentLoaded", async () =>
     document.addEventListener("keydown", e =>
     {
         if (e.ctrlKey && e.code === "KeyS" ||
-            e.ctrlKey && e.code == "Enter")
+            e.ctrlKey && e.code === "Enter")
         {
             e.preventDefault();
             elements.saveButton.click();
         }
 
-        if (e.code == "Escape")
+        if (e.code === "Escape")
         {
             e.preventDefault();
             elements.cancelButton.click();

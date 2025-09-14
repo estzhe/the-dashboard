@@ -1,6 +1,7 @@
 import Argument from '/lib/argument.js';
 import Google from '/components/google/google.js';
 import BaseComponent from '/components/base-component.js';
+import template from '/components/google/mail/template.hbs';
 
 export default class GoogleMailComponent extends BaseComponent
 {
@@ -35,7 +36,7 @@ export default class GoogleMailComponent extends BaseComponent
             threads,
         };
         
-        container.innerHTML = await this._template("template", data);
+        container.innerHTML = template(data);
 
         for (const action of container.querySelectorAll(".archive-button"))
         {

@@ -2,13 +2,14 @@ import Argument from '/lib/argument.js';
 
 export default class Github
 {
-    static getPersonalAccessToken(accountName)
+    static async getPersonalAccessToken(storage, accountName)
     {
+        Argument.notNullOrUndefined(storage, "storage");
         Argument.notNullOrUndefinedOrEmpty(accountName, "accountName");
         
         const key = `github.accounts.${accountName}`;
 
-        let token = localStorage.getItem(key);
+        let token = await storage.getItem(key);
         if (!token)
         {
             token = prompt(`Please enter personal access token for GitHub account ${accountName}`);
@@ -17,7 +18,7 @@ export default class Github
                 throw new Error("A personal access token was not provided by user.");
             }
 
-            localStorage.setItem(key, token);
+            await storage.setItem(key, token);
         }
 
         return token;

@@ -129,6 +129,6 @@ export default class Charts
             });
         }
 
-        vegaEmbed(container, spec, { actions: false });
+        vegaEmbed(container, spec, { actions: false, ast: true });
     }
 }

@@ -2,7 +2,7 @@
     <tbody>
         {{#each entries}}
             <tr
-                data-date="{{toString date}}"
+                data-date="{{to-string date}}"
                 {{#if isLastTrackedEntry}} style="border-bottom: 1px solid gray" {{/if}}>
                 <td>
                     {{readable-date date}}
@@ -13,9 +13,9 @@
                             <input
                                 type="radio"
                                 class="editable-element"
-                                name="date-{{toString date}}"
+                                name="date-{{to-string date}}"
                                 value="true"
-                                {{#ifEquals value true}}checked{{/ifEquals}} />
+                                {{#if-equals value true}}checked{{/if-equals}} />
                             yes
                         </label>
                         
@@ -23,9 +23,9 @@
                             <input
                                 type="radio"
                                 class="editable-element"
-                                name="date-{{toString date}}"
+                                name="date-{{to-string date}}"
                                 value="false"
-                                {{#ifEquals value false}}checked{{/ifEquals}} />
+                                {{#if-equals value false}}checked{{/if-equals}} />
                             no
                         </label>
 
@@ -33,10 +33,10 @@
                             <input
                                 type="radio"
                                 class="editable-element"
-                                name="date-{{toString date}}"
+                                name="date-{{to-string date}}"
                                 value="null"
-                                {{#ifEquals value undefined}}checked{{/ifEquals}}
-                                {{#ifEquals value null}}checked{{/ifEquals}} />
+                                {{#if-equals value undefined}}checked{{/if-equals}}
+                                {{#if-equals value null}}checked{{/if-equals}} />
                             ignore
                         </label>
                     {{else}}

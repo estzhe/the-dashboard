@@ -2,6 +2,8 @@ import Github from '/components/github/github.js';
 import Argument from '/lib/argument.js';
 import BaseComponent from '/components/base-component.js';
 import { marked } from 'marked';
+import template from '/components/github/issues/template.hbs';
+import issuePreviewTemplate from '/components/github/issues/issue-preview.hbs';
 
 export default class GithubIssuesComponent extends BaseComponent
 {
@@ -62,7 +64,7 @@ export default class GithubIssuesComponent extends BaseComponent
             issues,
         };
 
-        container.innerHTML = await this._template("template", data);
+        container.innerHTML = template(data);
 
         const elements = {
             title: container.querySelector(".issues-title"),
@@ -112,7 +114,7 @@ export default class GithubIssuesComponent extends BaseComponent
                     this.#repoInfo.owner,
                     this.#repoInfo.repo,
                     issue.number,
-                    Github.getPersonalAccessToken(this.#accountName),
+                    await Github.getPersonalAccessToken(this._services.storage, this.#accountName),
                 );
 
                 const data = {
@@ -123,7 +125,7 @@ export default class GithubIssuesComponent extends BaseComponent
                     })),
                 };
 
-                elements.dialog.innerHTML = await this._template("issue-preview", data);
+                elements.dialog.innerHTML = issuePreviewTemplate(data);
                 elements.dialog.showModal();
             });
         }
@@ -135,7 +137,7 @@ export default class GithubIssuesComponent extends BaseComponent
             `${this.#repoInfo.owner}.${this.#repoInfo.repo}.issues`,
             async () =>
             {
-                const accessToken = Github.getPersonalAccessToken(this.#accountName);
+                const accessToken = await Github.getPersonalAccessToken(this._services.storage, this.#accountName);
 
                 return await GithubIssuesComponent.#fetchIssues(
                     this.#repoInfo.owner,

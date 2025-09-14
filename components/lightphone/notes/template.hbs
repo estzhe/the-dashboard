@@ -6,22 +6,22 @@
 
 {{#each notes}}
     <div class="item" data-id="{{id}}">
-        <span class="column {{#ifEquals type 'audio'}}audio-container{{/ifEquals}}">
-            {{#ifEquals type 'text'}}
+        <span class="column {{#if-equals type 'audio'}}audio-container{{/if-equals}}">
+            {{#if-equals type 'text'}}
                 {{#if title}}
                     <span title="{{text}}">{{title}}</span>
                 {{else}}
                     <span style="white-space: pre-line">{{text}}</span>
                 {{/if}}
-            {{/ifEquals}}
+            {{/if-equals}}
         </span>
 
-        {{#ifEquals type 'audio'}}
+        {{#if-equals type 'audio'}}
             <span class="column download-button item-action material-icons"
                   title="{{readable-date-from-utc-datetime-string timeUpdated}}">
                 south
             </span>
-        {{/ifEquals}}
+        {{/if-equals}}
 
         <span class="column done-button item-action material-icons">
             done

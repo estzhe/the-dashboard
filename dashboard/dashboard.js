@@ -1,5 +1,6 @@
 import Argument from '/lib/argument.js';
 import AsyncLazy from '/lib/async-lazy.js';
+import ChromeLocalStorage from '/lib/chrome-local-storage.js';
 import DashboardLayout from '/dashboard/dashboard-layout.js';
 import ComponentResolver from '/dashboard/component-resolver.js';
 import { Temporal } from '@js-temporal/polyfill';
@@ -7,7 +8,7 @@ import { Temporal } from '@js-temporal/polyfill';
 export default class Dashboard
 {
     /**
-     * @type {Storage}
+     * @type {ChromeLocalStorage}
      */
     #storage;
 
@@ -22,7 +23,7 @@ export default class Dashboard
     #componentsLazy;
 
     constructor(
-        storage = localStorage,
+        storage = new ChromeLocalStorage(),
         componentResolver = new ComponentResolver("/components"))
     {
         this.#storage = storage;
@@ -31,29 +32,29 @@ export default class Dashboard
     }
 
     /**
-     * @returns {string}
+     * @returns {Promise<string>}
      */
-    getLayout()
+    async getLayout()
     {
-        return this.#storage.getItem("options.layout") ?? "";
+        return await this.#storage.getItem("options.layout") ?? "";
     }
 
     /**
      * @param {string} html
-     * @returns {void}
+     * @returns {Promise}
      */
-    setLayout(html)
+    async setLayout(html)
     {
-        this.#storage.setItem("options.layout", html);
+        await this.#storage.setItem("options.layout", html);
         this.#componentsLazy = new AsyncLazy(async () => await this.#createComponentInstances());
     }
 
     /**
-     * @returns {Temporal.Instant?}
+     * @returns {Promise<Temporal.Instant|null>}
      */
-    get lastDataRefreshDate()
+    async getLastDataRefreshDate()
     {
-        const raw = this.#storage.getItem("options.lastDataRefreshDate");
+        const raw = await this.#storage.getItem("options.lastDataRefreshDate");
         return raw === null ? null : Temporal.Instant.from(raw);
     }
 
@@ -61,10 +62,10 @@ export default class Dashboard
      * 
      * @param {Temporal.Instant} value
      */
-    set #lastDataRefreshDate(value)
+    async #setLastDataRefreshDate(value)
     {
         Argument.notNullOrUndefined(value, "value");
-        this.#storage.setItem("options.lastDataRefreshDate", value.toString());
+        await this.#storage.setItem("options.lastDataRefreshDate", value.toString());
     }
 
     /**
@@ -77,7 +78,7 @@ export default class Dashboard
         Argument.notNullOrUndefined(targetContainer, "targetContainer");
 
         const components = await this.#componentsLazy.getValue();
-        const layout = this.getLayout();
+        const layout = await this.getLayout();
 
         // If the dashboard has already been rendered in targetContainer,
         // we ideally want to avoid full re-rendering, because during full
@@ -94,7 +95,7 @@ export default class Dashboard
 
         if (refreshData)
         {
-            this.#lastDataRefreshDate = Temporal.Now.instant();
+            await this.#setLastDataRefreshDate(Temporal.Now.instant());
         }
 
         await Promise.all(components.map(
@@ -131,7 +132,7 @@ export default class Dashboard
         const components = await this.#componentsLazy.getValue();
         await Promise.all(components.map(c => c.refreshData()));
 
-        this.#lastDataRefreshDate = Temporal.Now.instant();
+        await this.#setLastDataRefreshDate(Temporal.Now.instant());
     }
 
     /**
@@ -139,7 +140,7 @@ export default class Dashboard
      */
     async #createComponentInstances()
     {
-        const layout = new DashboardLayout(this.getLayout());
+        const layout = new DashboardLayout(await this.getLayout());
 
         const components = [];
         for (const options of layout.componentOptions)

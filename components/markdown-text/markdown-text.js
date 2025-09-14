@@ -1,5 +1,6 @@
 import BaseComponent from '/components/base-component.js';
 import { marked } from 'marked';
+import template from '/components/markdown-text/template.hbs';
 
 export default class MarkdownTextComponent extends BaseComponent
 {
@@ -12,8 +13,8 @@ export default class MarkdownTextComponent extends BaseComponent
     {
         await super.render(container, refreshData);
 
-        const html = markdownToHtml(this.#loadText() ?? "");
-        container.innerHTML = await this._template("template", html);
+        const html = markdownToHtml(await this.#loadText() ?? "");
+        container.innerHTML = template(html);
 
         const elements = {
             container: container,
@@ -26,11 +27,11 @@ export default class MarkdownTextComponent extends BaseComponent
             editorDialog: container.querySelector("dialog.editor")
         };
 
-        elements.editButton.addEventListener("click", e =>
+        elements.editButton.addEventListener("click", async e =>
         {
             e.preventDefault();
 
-            const text = this.#loadText() ?? "";
+            const text = await this.#loadText() ?? "";
 
             elements.textarea.value = text;
             elements.preview.innerHTML = markdownToHtml(text);
@@ -39,11 +40,11 @@ export default class MarkdownTextComponent extends BaseComponent
             elements.textarea.focus();
         });
 
-        elements.saveButton.addEventListener("click", () =>
+        elements.saveButton.addEventListener("click", async () =>
         {
             const newText = elements.textarea.value;
 
-            this.#saveText(newText);
+            await this.#saveText(newText);
 
             elements.text.innerHTML = markdownToHtml(newText);
             elements.editorDialog.close();
@@ -62,7 +63,7 @@ export default class MarkdownTextComponent extends BaseComponent
         elements.editorDialog.addEventListener("keydown", e =>
         {
             if (e.ctrlKey && e.code === "KeyS" ||
-                e.ctrlKey && e.code == "Enter")
+                e.ctrlKey && e.code === "Enter")
             {
                 e.preventDefault();
                 elements.saveButton.click();
@@ -70,14 +71,14 @@ export default class MarkdownTextComponent extends BaseComponent
         });
     }
 
-    #loadText()
+    async #loadText()
     {
-        return this._services.storage.getItem(`markdown-text.text.${this.id}`);
+        return await this._services.storage.getItem(`markdown-text.text.${this.id}`);
     }
 
-    #saveText(value)
+    async #saveText(value)
     {
-        this._services.storage.setItem(`markdown-text.text.${this.id}`, value);
+        await this._services.storage.setItem(`markdown-text.text.${this.id}`, value);
     }
 }
 

@@ -1,4 +1,5 @@
 import Argument from '/lib/argument.js';
+import * as parse5 from "parse5";
 
 export default class DashboardLayout
 {
@@ -47,31 +48,52 @@ export default class DashboardLayout
     {
         Argument.notNullOrUndefined(layout, "layout");
 
-        const doc = new DOMParser().parseFromString(layout, "text/html");
+        const doc = parse5.parse(layout);
 
         const componentOptions = [];
+        DashboardLayout.#walkDomForComponentOptions(doc, componentOptions);
+        
+        return componentOptions;
+    }
 
-        const containers = doc.querySelectorAll("div[component]");
-        for (const container of containers)
+    static #walkDomForComponentOptions(node, componentOptions)
+    {
+        const options = DashboardLayout.#tryExtractComponentOptions(node);
+        if (options)
         {
-            const componentName = container.getAttribute("component");
-            if (!componentName)
-            {
-                throw new Error(`One of the components is missing a component name. Layout: '${container.innerHTML}'.`);
-            }
-
-            const attributes = Array.from(container.attributes)
-                                    .filter(a => !["style", "class"].includes(a.name));
-            const options = Object.fromEntries(
-                attributes.map(a => [
-                    DashboardLayout.#camelizeAttributeName(a.name),
-                    a.value,
-                ]));
-
             componentOptions.push(options);
         }
+        
+        if (node.childNodes)
+        {
+            for (const child of node.childNodes)
+            {
+                this.#walkDomForComponentOptions(child, componentOptions);
+            }
+        }
+    }
 
-        return componentOptions;
+    static #tryExtractComponentOptions(node)
+    {
+        if (node.tagName !== "div") return null;
+        
+        const componentAttribute = node.attrs.find(a => a.name === "component");
+        if (!componentAttribute) return null;
+        
+        const componentName = componentAttribute.value;
+        if (!componentName)
+        {
+            throw new Error(`One of the components is missing a component name. Layout: '${parse5.serialize(node)}'.`);
+        }
+        
+        const attributes = node.attrs.filter(a => !["style", "class"].includes(a.name));
+        const options = Object.fromEntries(
+            attributes.map(a => [
+                DashboardLayout.#camelizeAttributeName(a.name),
+                a.value,
+            ]));
+        
+        return options;
     }
 
     static #camelizeAttributeName(name)

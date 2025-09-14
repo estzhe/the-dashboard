@@ -23,12 +23,13 @@ async function onLoad()
 {
     await dashboard.render(elements.dashboardContainer, /* refreshData */ false);
 
+    const lastDataRefreshDate = await dashboard.getLastDataRefreshDate();
     elements.lastDataRefreshDateSpan.innerHTML =
-        dashboard.lastDataRefreshDate !== null
+        lastDataRefreshDate !== null
             ? ReadableTemporalFormat.plainDateTimeToString(
-                dashboard.lastDataRefreshDate
-                         .toZonedDateTimeISO(Temporal.Now.timeZoneId())
-                         .toPlainDateTime())
+                lastDataRefreshDate
+                    .toZonedDateTimeISO(Temporal.Now.timeZoneId())
+                    .toPlainDateTime())
             : "never";
 }
 
@@ -38,12 +39,13 @@ async function onRefreshClick(e)
 
     await dashboard.render(elements.dashboardContainer, /* refreshData */ true);
 
+    const lastDataRefreshDate = await dashboard.getLastDataRefreshDate();
     elements.lastDataRefreshDateSpan.innerHTML =
-        dashboard.lastDataRefreshDate !== null
+        lastDataRefreshDate !== null
             ? ReadableTemporalFormat.plainDateTimeToString(
-                dashboard.lastDataRefreshDate
-                         .toZonedDateTimeISO(Temporal.Now.timeZoneId())
-                         .toPlainDateTime())
+                lastDataRefreshDate
+                    .toZonedDateTimeISO(Temporal.Now.timeZoneId())
+                    .toPlainDateTime())
             : "never";
 }
 

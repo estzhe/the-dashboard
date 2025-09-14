@@ -3,6 +3,8 @@ import DailyStore from '/lib/daily-store.js';
 import BaseComponent from '/components/base-component.js';
 import Charts from '/components/goal/charts.js';
 import { Temporal } from '@js-temporal/polyfill';
+import template from '/components/goal/binary-tracker/template.hbs';
+import historyEditorTemplate from '/components/goal/binary-tracker/history-editor.hbs';
 
 export default class GoalBinaryTrackerComponent extends BaseComponent
 {
@@ -24,26 +26,20 @@ export default class GoalBinaryTrackerComponent extends BaseComponent
     #store;
 
     /**
-     * @returns {Temporal.PlainDate}
+     * @returns {Promise<Temporal.PlainDate>}
      */
-    get #trackingStartDate()
+    async #getTrackingStartDate()
     {
-        const serialized = this._services.storage.getItem(
-            `goal-binary-tracker-component.${this.id}.tracking-start-date`);
-        return serialized ? Temporal.PlainDate.from(serialized) : null;
-    }
+        const key = `goal-binary-tracker-component.${this.id}.tracking-start-date`;
 
-    /**
-     * @param {Temporal.PlainDate} date
-     */
-    set #trackingStartDate(date)
-    {
-        Argument.notNullOrUndefined(date, "date");
-        Argument.isInstanceOf(date, Temporal.PlainDate, "date");
-
-        this._services.storage.setItem(
-            `goal-binary-tracker-component.${this.id}.tracking-start-date`,
-            date.toJSON());
+        let serialized = await this._services.storage.getItem(key);
+        if (!serialized)
+        {
+            await this._services.storage.setItem(key, Temporal.Now.plainDateISO().toJSON());
+            serialized = await this._services.storage.getItem(key);
+        }
+        
+        return Temporal.PlainDate.from(serialized);
     }
 
     constructor(pathToComponent, options)
@@ -83,10 +79,6 @@ export default class GoalBinaryTrackerComponent extends BaseComponent
         this.#ignoreSkippedDays = options.ignoreSkippedDays === "true";
 
         this.#store = new DailyStore(this._services.storage, `goal-binary-tracker-component.${this.id}`);
-        if (!this.#trackingStartDate)
-        {
-            this.#trackingStartDate = Temporal.Now.plainDateISO();
-        }
     }
 
     async render(container, refreshData)
@@ -100,9 +92,9 @@ export default class GoalBinaryTrackerComponent extends BaseComponent
         //  - undefined means a value for this date has not been set explicitly
         //  - null means a value for this date has been explicitly set to be ignored
         //    (thus, for null we consider that a day has an entry)
-        const hasEntryForToday = this.#store.getValue(today) !== undefined;
+        const hasEntryForToday = await this.#store.getValue(today) !== undefined;
 
-        const successRates = this.#calculateSuccessRatesUntilDate(
+        const successRates = await this.#calculateSuccessRatesUntilDate(
             hasEntryForToday ? today : yesterday,
             this.#visibleWindowDays,
             this.#trackingWindowDays,
@@ -127,7 +119,7 @@ export default class GoalBinaryTrackerComponent extends BaseComponent
             ignoreSkippedDays: this.#ignoreSkippedDays,
         };
 
-        container.innerHTML = await this._template("template", data);
+        container.innerHTML = template(data);
 
         const elements = {
             chart: container.querySelector(".chart"),
@@ -149,7 +141,7 @@ export default class GoalBinaryTrackerComponent extends BaseComponent
                     e.target.dataset.value === "false" ? false :
                     null;
                 
-                this.#setRawEntry(today, value);
+                await this.#setRawEntry(today, value);
                 await this.render(container, /* refreshData */ false);
             });
         }
@@ -158,10 +150,10 @@ export default class GoalBinaryTrackerComponent extends BaseComponent
         {
             e.preventDefault();
 
-            const rawEntries = this.#getRawEntriesUntilDate(
+            const rawEntries = (await this.#getRawEntriesUntilDate(
                 today,
                 /*includeDaysWithoutValue */ true
-            ).sort((a, b) => Temporal.PlainDate.compare(a.date, b.date) > 0 ? -1 : 1);
+            )).sort((a, b) => Temporal.PlainDate.compare(a.date, b.date) > 0 ? -1 : 1);
 
             if (rawEntries.length >= this.#trackingWindowDays)
             {
@@ -193,8 +185,8 @@ export default class GoalBinaryTrackerComponent extends BaseComponent
                 ignoreSkippedDays: this.#ignoreSkippedDays,
             };
 
-            elements.historyEditorDialog.innerHTML = await this._template("history-editor", data);
-            elements.historyEditorDialog.querySelector(".editable-elements-container").addEventListener("change", e =>
+            elements.historyEditorDialog.innerHTML = historyEditorTemplate(data);
+            elements.historyEditorDialog.querySelector(".editable-elements-container").addEventListener("change", async e =>
             {
                 if (!e.target.classList.contains("editable-element")) return;
 
@@ -207,7 +199,7 @@ export default class GoalBinaryTrackerComponent extends BaseComponent
                     e.target.value === "null" ? null :
                     e.target.checked;
 
-                this.#setRawEntry(date, value);
+                await this.#setRawEntry(date, value);
                 elements.historyEditorDialog.dataset.haveValuesChanged = true;
             });
 
@@ -238,9 +230,9 @@ export default class GoalBinaryTrackerComponent extends BaseComponent
      * @param {Temporal.PlainDate} date
      * @param {boolean} value
      */
-    #setRawEntry(date, value)
+    async #setRawEntry(date, value)
     {
-        this.#store.setValue(date, value);
+        await this.#store.setValue(date, value);
     }
 
     /**
@@ -249,20 +241,20 @@ export default class GoalBinaryTrackerComponent extends BaseComponent
      * @param {number} calculationLookbackDays
      * @param {boolean} includeDaysWithoutValue
      * 
-     * @returns {{
+     * @returns {Promise<{
      *      date: Temporal.PlainDate,
      *      value: number,
      *      basis: {
      *          successCount: number,
      *          daysAttempted: number
      *      }
-     * }[]}
+     * }[]>}
      */
-    #calculateSuccessRatesUntilDate(targetDate, daysToCalculate, calculationLookbackDays, includeDaysWithoutValue)
+    async #calculateSuccessRatesUntilDate(targetDate, daysToCalculate, calculationLookbackDays, includeDaysWithoutValue)
     {
         const successRates = [];
 
-        const rawEntries = this.#getRawEntriesUntilDate(targetDate, includeDaysWithoutValue);
+        const rawEntries = await this.#getRawEntriesUntilDate(targetDate, includeDaysWithoutValue);
         
         let rollingSuccessCount = null;
         for (
@@ -307,12 +299,12 @@ export default class GoalBinaryTrackerComponent extends BaseComponent
      * @param {Temporal.PlainDate} targetDate
      * @param {boolean} includeDaysWithoutValue
      * 
-     * @returns {{
+     * @returns {Promise<{
      *      date: Temporal.PlainDate,
      *      value: number
-     * }[]}
+     * }[]>}
      */
-    #getRawEntriesUntilDate(targetDate, includeDaysWithoutValue)
+    async #getRawEntriesUntilDate(targetDate, includeDaysWithoutValue)
     {
         Argument.notNullOrUndefined(targetDate, "targetDate");
         Argument.isInstanceOf(targetDate, Temporal.PlainDate, "targetDate");
@@ -321,11 +313,11 @@ export default class GoalBinaryTrackerComponent extends BaseComponent
         const rawEntries = [];
 
         for (
-            let date = this.#trackingStartDate;
+            let date = await this.#getTrackingStartDate();
             Temporal.PlainDate.compare(date, targetDate) <= 0;
             date = date.add({ days: 1 }))
         {
-            const value = this.#store.getValue(date);
+            const value = await this.#store.getValue(date);
             if ((value === undefined || value === null) && !includeDaysWithoutValue)
             {
                 continue;
