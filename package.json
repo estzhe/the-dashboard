@@ -2,21 +2,21 @@
   "type": "module",
   "devDependencies": {
     "handlebars-loader": "^1.7.3",
-    "webpack": "^5.90.3",
-    "webpack-cli": "^5.1.4"
+    "webpack": "^5.101.3",
+    "webpack-cli": "^6.0.1"
   },
   "dependencies": {
-    "@js-temporal/polyfill": "^0.4.4",
-    "css-loader": "^6.10.0",
+    "@js-temporal/polyfill": "^0.5.1",
+    "css-loader": "^7.1.2",
     "file-loader": "^6.2.0",
     "handlebars": "^4.7.8",
-    "marked": "^12.0.1",
-    "monaco-editor": "^0.47.0",
+    "marked": "^16.3.0",
+    "monaco-editor": "^0.53.0",
     "monaco-editor-webpack-plugin": "^7.1.0",
     "parse5": "^8.0.0",
-    "style-loader": "^3.3.4",
+    "style-loader": "^4.0.0",
     "vega": "^6.1.2",
     "vega-embed": "^7.0.2",
-    "vega-lite": "^6.2.0"
+    "vega-lite": "^6.3.1"
   }
 }
