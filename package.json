@@ -1,5 +1,8 @@
 {
   "type": "module",
+  "scripts": {
+    "build": "webpack build"
+  },
   "devDependencies": {
     "handlebars-loader": "^1.7.3",
     "webpack": "^5.101.3",
