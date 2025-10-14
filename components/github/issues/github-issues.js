@@ -1,9 +1,12 @@
 import Github from '/components/github/github.js';
 import Argument from '/lib/argument.js';
 import BaseComponent from '/components/base-component.js';
+import GithubClient from "/components/github/github-client.js";
+import { Temporal, Intl } from "@js-temporal/polyfill";
 import { marked } from 'marked';
 import template from '/components/github/issues/template.hbs';
 import issuePreviewTemplate from '/components/github/issues/issue-preview.hbs';
+import dueDateSelectorTemplate from '/components/github/issues/due-date-selector.hbs';
 
 export default class GithubIssuesComponent extends BaseComponent
 {
@@ -46,7 +49,21 @@ export default class GithubIssuesComponent extends BaseComponent
     async #renderIssues(container, issues)
     {
         issues = GithubIssuesComponent.#filterIssues(issues, this.#filter);
-        issues = issues.sort((i1, i2) => i2.updated_at.localeCompare(i1.updated_at));   // recent first
+        issues = issues
+            .sort((i1, i2) => i2.updated_at.localeCompare(i1.updated_at))   // recent first
+            .map(issue =>
+            {
+                const dueDateLabel = issue.labels.find(l => l.name.startsWith("due:"))?.name;
+                if (dueDateLabel &&
+                    /due:\s*\d{4}-\d{1,2}-\d{1,2}/.test(dueDateLabel))
+                {
+                    const dueDate = Temporal.PlainDate.from(dueDateLabel.replace("due:", "").trim());
+                    issue.due_on = dueDate;
+                    issue.is_past_due = Temporal.PlainDate.compare(dueDate, Temporal.Now.plainDateISO()) < 0;
+                    issue.is_due_today = Temporal.PlainDate.compare(dueDate, Temporal.Now.plainDateISO()) === 0;
+                }
+                return issue;
+            });
 
         let filterQuery = "is:open is:issue";
         if (this.#filter.include.length !== 0)
@@ -55,7 +72,7 @@ export default class GithubIssuesComponent extends BaseComponent
         }
         if (this.#filter.exclude.length !== 0)
         {
-            filterQuery += " " + this.#filter.exclude.map(tag => `-label:${tag}`).join(" ");
+            filterQuery += " " + this.#filter.exclude.map(label => `-label:${label}`).join(" ");
         }
 
         const data = {
@@ -67,55 +84,50 @@ export default class GithubIssuesComponent extends BaseComponent
         container.innerHTML = template(data);
 
         const elements = {
+            container,
             title: container.querySelector(".issues-title"),
             dialog: container.querySelector("dialog.issue-viewer"),
-            items: container.querySelectorAll(".item"),
+            items: Array.from(container.querySelectorAll(".item")),
+            scheduleButtons: Array.from(container.querySelectorAll(".schedule-button")),
+            schedulePopover: container.querySelector(".schedule-popover"),
         };
 
-        if (elements.title)
+        elements.title?.addEventListener("click", e =>
         {
-            elements.title.addEventListener("click", e =>
-            {
-                if (e.altKey)
-                {
-                    e.preventDefault();
-
-                    let newIssueUri = `https://github.com/${this.#repoInfo.owner}/${this.#repoInfo.repo}/issues/new`;
-                    if (this.#filter.include.length !== 0)
-                    {
-                        newIssueUri += "?labels=" + encodeURIComponent(this.#filter.include.join(","));
-                    }
-                    
-                    window.open(newIssueUri, "_blank").focus();
-                }
-            });
-        }
-
-        elements.dialog.addEventListener("keydown", e =>
-        {
-            if (e.code === "Escape")
+            if (e.altKey)
             {
                 e.preventDefault();
-                elements.dialog.close();
+
+                let newIssueUri = `https://github.com/${this.#repoInfo.owner}/${this.#repoInfo.repo}/issues/new`;
+                if (this.#filter.include.length !== 0)
+                {
+                    newIssueUri += "?labels=" + encodeURIComponent(this.#filter.include.join(","));
+                }
+                
+                window.open(newIssueUri, "_blank").focus();
             }
         });
-
+        
+        await this.#renderIssuePreviewer(elements, issues);
+        await this.#renderScheduleSelector(elements, issues);
+    }
+    
+    async #renderIssuePreviewer(elements, issues)
+    {
         for (const item of elements.items)
         {
             item.addEventListener("click", async e =>
             {
                 if (e.ctrlKey || e.shiftKey) return;
-                
+
                 e.preventDefault();
 
                 const issueId = Number(e.target.closest(".item").dataset.issueId);
                 const issue = issues.find(x => x.id === issueId);
-                const comments = await GithubIssuesComponent.#fetchIssueComments(
-                    this.#repoInfo.owner,
-                    this.#repoInfo.repo,
-                    issue.number,
-                    await Github.getPersonalAccessToken(this._services.storage, this.#accountName),
-                );
+
+                const accessToken = await Github.getPersonalAccessToken(this._services.storage, this.#accountName);
+                const client = new GithubClient(accessToken);
+                const comments= await client.fetchIssueComments(this.#repoInfo.owner, this.#repoInfo.repo, issue.number);
 
                 const data = {
                     issue,
@@ -130,7 +142,81 @@ export default class GithubIssuesComponent extends BaseComponent
             });
         }
     }
+    
+    async #renderScheduleSelector(elements, issues)
+    {
+        elements.scheduleButtons.forEach(action =>
+        {
+            action.addEventListener("click", e =>
+            {
+                e.preventDefault();
+                e.stopPropagation();
 
+                const issueId = Number(e.target.closest(".item").dataset.issueId);
+                const issue = issues.find(x => x.id === issueId);
+
+                const today = Temporal.Now.plainDateISO();
+                const tomorrow = today.add({ days: 1 });
+                
+                const weekdays = [];
+                const firstDayOfCurrentWeek = today.subtract({ days: today.dayOfWeek - 1 });
+                const format = new Intl.DateTimeFormat('en-US', { weekday: "narrow" });
+                for (
+                    let date = firstDayOfCurrentWeek;
+                    date.since(firstDayOfCurrentWeek).days < 14;
+                    date = date.add({ days: 1 }))
+                {
+                    weekdays.push({
+                        title: format.format(date),
+                        isToday: date.equals(today),
+                        isSelected: issue.due_on && date.equals(issue.due_on),
+                    });
+                }
+
+                elements.schedulePopover.dataset.issueId = issueId;
+                elements.schedulePopover.innerHTML = dueDateSelectorTemplate({
+                    weekdays,
+                    isTodaySelected: issue.due_on?.equals(today) === true,
+                    isTomorrowSelected: issue.due_on?.equals(tomorrow) === true,
+                    selectedDateIso8601: issue.due_on?.toString() ?? "",
+                });
+                
+                elements.schedulePopover.querySelector(".today-button").addEventListener("click", async e =>
+                {
+                    const accessToken = await Github.getPersonalAccessToken(this._services.storage, this.#accountName);
+                    const client = new GithubClient(accessToken);
+                    
+                    const freshIssue = await client.fetchIssue(this.#repoInfo.owner, this.#repoInfo.repo, issue.number);
+                    
+                    const labels = freshIssue.labels
+                        .map(l => l.name)
+                        .filter(l => !l.startsWith("due:"));
+                    labels.push(`due: ${Temporal.Now.plainDateISO().toString()}`);
+                    
+                    await client.setIssueLabels(this.#repoInfo.owner, this.#repoInfo.repo, issue.number, labels);
+                });
+                
+                elements.schedulePopover.showPopover({
+                    source: e.target,
+                });
+            });
+        });
+
+        elements.schedulePopover.addEventListener("toggle", e => {
+            const issueId = e.target.dataset.issueId;
+            const sourceAction = elements.items.find(item => item.dataset.issueId === issueId).querySelector(".item-action:has(.schedule-button)");
+
+            if (e.newState === "open")
+            {
+                sourceAction.classList.add("visible");
+            }
+            else
+            {
+                sourceAction.classList.remove("visible");
+            }
+        });
+    }
+    
     async #getIssues(refreshData)
     {
         return await this._services.cache.component.get(
@@ -138,87 +224,11 @@ export default class GithubIssuesComponent extends BaseComponent
             async () =>
             {
                 const accessToken = await Github.getPersonalAccessToken(this._services.storage, this.#accountName);
-
-                return await GithubIssuesComponent.#fetchIssues(
-                    this.#repoInfo.owner,
-                    this.#repoInfo.repo,
-                    accessToken);
+                const client = new GithubClient(accessToken);
+                
+                return await client.fetchIssues(this.#repoInfo.owner, this.#repoInfo.repo);
             },
             refreshData);
-    }
-
-    static async #fetchIssues(repoOwner, repoName, accessToken)
-    {
-        Argument.notNullOrUndefinedOrEmpty(repoOwner, "repoOwner");
-        Argument.notNullOrUndefinedOrEmpty(repoName, "repoName");
-        Argument.notNullOrUndefinedOrEmpty(accessToken, "accessToken");
-        
-        const MAX_ISSIES_PER_PAGE = 100;
-        
-        const issues = [];
-
-        let page = 1;
-        let issuesOnPage;
-        do
-        {
-            let response = await fetch(
-                `https://api.github.com/repos/${repoOwner}/${repoName}/issues` +
-                    `?state=open` +
-                    `&per_page=${MAX_ISSIES_PER_PAGE}` +
-                    `&page=${page}`,
-                {
-                    headers: {
-                        "Accept": "application/vnd.github.v3.raw+json",
-                        "Authorization": `Bearer ${accessToken}`
-                    }
-                });
-
-            issuesOnPage = await response.json();
-            issues.push(...issuesOnPage);
-
-            page++;
-        }
-        while (issuesOnPage.length >= MAX_ISSIES_PER_PAGE);
-
-        return issues;
-    }
-
-    static async #fetchIssueComments(repoOwner, repoName, issueNumber, accessToken)
-    {
-        Argument.notNullOrUndefinedOrEmpty(repoOwner, "repoOwner");
-        Argument.notNullOrUndefinedOrEmpty(repoName, "repoName");
-        Argument.isNumber(issueNumber, "issueNumber");
-        Argument.notNullOrUndefinedOrEmpty(accessToken, "accessToken");
-        
-        const MAX_COMMENTS_PER_PAGE = 100;
-        
-        const comments = [];
-
-        let page = 1;
-        let commentsOnPage;
-        do
-        {
-            let response = await fetch(
-                `https://api.github.com/repos/${repoOwner}/${repoName}/issues/${issueNumber}/comments` +
-                    `?per_page=${MAX_COMMENTS_PER_PAGE}` +
-                    `&page=${page}`,
-                {
-                    headers: {
-                        "Accept": "application/vnd.github.v3.raw+json",
-                        "Authorization": `Bearer ${accessToken}`
-                    }
-                });
-
-            commentsOnPage = await response.json();
-            comments.push(...commentsOnPage);
-
-            page++;
-        }
-        while (commentsOnPage.length >= MAX_COMMENTS_PER_PAGE);
-
-        console.log(comments);
-        
-        return comments;
     }
 
     static #filterIssues(issues, filter)
@@ -273,11 +283,11 @@ export default class GithubIssuesComponent extends BaseComponent
             {
                 if (expression.length === 1)
                 {
-                    throw new Error("An exclusion filtering expression must include a tag to exclude after '-' character.");
+                    throw new Error("An exclusion filtering expression must include a label to exclude after '-' character.");
                 }
 
-                const tag = expression.substring(1);
-                exclude.push(tag);
+                const label = expression.substring(1);
+                exclude.push(label);
             }
             else
             {

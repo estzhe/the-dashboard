@@ -165,6 +165,7 @@ th:empty
             border-bottom: 1px solid #e8ecee;
             padding: 0.3rem 0;
             position: relative;
+            box-sizing: border-box;
         }
 
         .components-container .card .item:last-of-type
@@ -175,6 +176,20 @@ th:empty
         .components-container .card .item:hover
         {
             background-color: #f6f8f9;
+        }
+        
+        .components-container .card .item.selected
+        {
+            background-color: #c3c4c5;
+            font-weight: bold;
+            color: white;
+            border: 2px solid #737373;
+            line-height: calc(1.5em - 3px);
+        }
+        
+        .components-container .card .item.selected:hover
+        {
+            background-color: #838282;
         }
 
             .components-container .card .item .column
@@ -196,6 +211,10 @@ th:empty
 
                 padding-top: 0.1em;
                 flex: 0 0 2rem;
+            }
+
+            .components-container .card .item .item-action.visible {
+                visibility: visible;
             }
     
             .components-container .card .item:hover .item-action

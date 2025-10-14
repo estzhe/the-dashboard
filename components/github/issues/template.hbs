@@ -9,6 +9,17 @@
         <span class="column">
             {{title}}
         </span>
+
+        {{#if due_on}}
+            <div class="column {{#if is_past_due}}negative-attention{{/if}} {{#if is_due_today}}positive-attention{{/if}}"
+               style="flex: 0 0 5rem;">
+                {{readable-date due_on}}
+            </div>
+        {{/if}}
+        
+        <div class="column item-action material-icons">
+            <span class="schedule-button">schedule</span>
+        </div>
     </a>
 {{else}}
     No issues.
@@ -16,3 +27,6 @@
 
 <dialog class="issue-viewer" style="width: 70%; height: 75%; overflow: auto;">
 </dialog>
+
+<div popover class="schedule-popover" style="position-area: bottom center; inset: auto; margin: 0; border: 1px solid black;">
+</div>
