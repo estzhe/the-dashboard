@@ -52,7 +52,7 @@ async function onRefreshClick(e)
 function onKeyDown(e)
 {
     const tag = e.target.tagName.toLowerCase();
-    if (tag === "textarea" || tag == "input")
+    if (tag === "textarea" || tag === "input")
     {
         return;
     }
