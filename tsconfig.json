@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "outDir": "./out/typescript",
+    "sourceMap": true,
+    "strictNullChecks": true,
+    "strictPropertyInitialization": true,
+    "strictFunctionTypes": true,
+    "moduleResolution": "nodenext",
+    "module": "nodenext",
+    "target": "esnext",
+    "jsx": "react-jsxdev",
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "moduleDetection": "force",
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "paths": {
+      "app/*": ["./src/*"],
+    }
+  },
+  "include": [
+    "./src"
+  ]
+}

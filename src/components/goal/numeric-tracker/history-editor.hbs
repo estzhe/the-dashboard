@@ -1,0 +1,19 @@
+<table class="editable-elements-container">
+    <tbody>
+        {{#each entries}}
+            <tr>
+                <td>
+                    {{readable-date date}}
+                </td>
+                <td>
+                    <input
+                        type="number"
+                        data-date="{{to-string date}}"
+                        class="editable-element"
+                        {{#if-equals value 0}}value="0"{{/if-equals}}
+                        {{#if value}}value="{{value}}"{{/if}} />
+                </td>
+            </tr>
+        {{/each}}
+    </tbody>
+</table>

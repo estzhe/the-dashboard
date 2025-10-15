@@ -1,0 +1,13 @@
+<div style="width: 100%;">
+    <canvas class="temperature" style="width: 100%; display: block;" height="30"></canvas>
+    <canvas class="clouds" style="width: 100%; display: block;" height="30"></canvas>
+    <canvas class="rain-and-snow" style="width: 100%; display: block;" height="30"></canvas>
+
+    <div style="display: flex; width: 100%; font-size: 80%">
+        {{#each .}}
+            <span style="flex: 1 0; {{#if isCurrentHour}}font-weight: bold; font-size: 1.3em;{{/if}}">
+                {{displayTime}}
+            </span>
+        {{/each}}
+    </div>
+</div>

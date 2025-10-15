@@ -1,0 +1,26 @@
+<div style="display: flex; flex-direction: column; text-align: left; height: 100%;">
+    {{#if title}}
+        <h1>{{title}}</h1>
+    {{/if}}
+    
+    <div style="display: flex; align-items: center;">
+        <div class="current-value" style="font-size: 200%; cursor: pointer; flex: 1;">
+            {{#if currentValue}}
+                {{currentValue}}
+            {{else}}
+                ?
+            {{/if}}
+        </div>
+    
+        <div class="todays-entry" style="flex: 2;">
+            {{#if needTodaysEntry}}
+                <input type="number" step="0.1" style="width: 50px" placeholder="today" /> <button>save</button>
+            {{/if}}
+        </div>
+    </div>
+    
+    <div class="chart" style="flex: 1"></div>
+</div>
+
+<dialog class="history-editor" style="width: 70%; height: 75%; overflow: auto;">
+</dialog>

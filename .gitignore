@@ -1,4 +1,4 @@
 .vs
 .idea
+out/
 node_modules/
-pages/dist/

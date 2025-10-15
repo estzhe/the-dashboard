@@ -1,0 +1,34 @@
+{{#if title}}
+    <a href="https://mail.google.com/mail/?authuser={{emailAddress}}#inbox" class="anchor-header">
+        <h1>{{title}}</h1>
+    </a>
+{{/if}}
+
+{{#each threads}}
+    <div class="item"
+         data-thread-id="{{threadId}}">
+        
+        <a class="column {{#if isUnread}}highlight{{/if}}"
+           href="https://mail.google.com/mail/?authuser={{../emailAddress}}#inbox/{{threadId}}"
+           title="{{snippet}}">
+            {{subject}}
+        </a>
+        
+        <a class="column"
+           style="flex: 0 0 8rem"
+           href="https://mail.google.com/mail/?authuser={{../emailAddress}}#inbox/{{threadId}}"
+           title="{{from.email}}">
+            {{#if from.displayName}}
+                {{from.displayName}}
+            {{else}}
+                {{from.email}}
+            {{/if}}
+        </a>
+
+        <span class="column archive-button item-action material-icons">
+            done
+        </span>
+    </div>
+{{else}}
+    No emails today.
+{{/each}}

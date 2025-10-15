@@ -15,11 +15,11 @@
     ],
 
     "chrome_url_overrides": {
-        "newtab": "pages/newtab.html"
+        "newtab": "src/pages/newtab.html"
     },
 
     "background": {
-        "service_worker": "pages/dist/service-worker.js"
+        "service_worker": "out/webpack/service-worker.js"
     },
 
     "oauth2": {

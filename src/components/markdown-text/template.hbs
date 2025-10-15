@@ -1,0 +1,26 @@
+<a class="card-action material-icons edit" href="">
+    edit
+</a>
+
+<div class="text">
+    {{#if this}}
+        {{{this}}}
+    {{else}}
+        No text to show. Add something.
+    {{/if}}
+</div>
+
+<dialog class="editor" style="width: 90%; height: 70%;">
+    <div style="width: 100%; height: 100%; display: flex;">
+        
+        <textarea style="flex: 1 0; margin: 0.5rem;"></textarea>
+        
+        <div class="preview" style="flex: 1 0; margin: 0.5rem; overflow: auto;"></div>
+
+        <div style="flex: 0 0 4rem; text-align: center; display: flex; flex-flow: column; color: lightgray;">
+            <i class="material-icons save" style="cursor: pointer; font-size: 36px; margin-top: 0.5rem;">save</i>
+            <i class="material-icons cancel" style="cursor: pointer; font-size: 36px; margin-top: 0.5rem;">cancel</i>
+        </div>
+
+    </div>
+</dialog>
