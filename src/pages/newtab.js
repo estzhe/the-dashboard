@@ -60,7 +60,7 @@ function onKeyDown(e)
     if (e.code === "KeyO")
     {
         e.preventDefault();
-        chrome.tabs.update({ url: "pages/options.html" });
+        chrome.tabs.update({ url: "src/pages/options.html" });
     }
     else if (e.code === "KeyR" && !e.ctrlKey && !e.altKey)
     {
