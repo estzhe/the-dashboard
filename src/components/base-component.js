@@ -17,7 +17,10 @@ export default class BaseComponent
     /**
      * @type {{
      *      storage: {ChromeLocalStorage},
-     *      cache: {ReadCache},
+     *      cache: {
+     *          component: ReadCache,
+     *          instance: ReadCache
+     *      }
      * }}
      */
     #services;
@@ -48,8 +51,8 @@ export default class BaseComponent
         this.#services = Object.freeze({
             storage: storage,
             cache: {
-                instance: new ReadCache("instance." + options.id, storage, navigator.locks),
-                component: new ReadCache("component." + pathToComponent, storage, navigator.locks),
+                instance: new ReadCache("instance." + options.id, storage),
+                component: new ReadCache("component." + pathToComponent, storage),
             },
         });
     }

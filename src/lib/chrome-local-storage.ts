@@ -1,16 +1,16 @@
 export default class ChromeLocalStorage
 {
-    async setItem(key, value){
-        return new Promise(resolve => {
+    async setItem(key: string, value: string): Promise<void> {
+        return new Promise<void>(resolve => {
             chrome.storage.local.set(
                 {
-                    [key]: String(value),
+                    [key]: value,
                 },
                 resolve);
         });
     }
 
-    async getItem(key) {
+    async getItem(key: string): Promise<string | null> {
         return new Promise(resolve => {
             chrome.storage.local.get(
                 key,
@@ -20,8 +20,8 @@ export default class ChromeLocalStorage
         });
     }
 
-    async removeItem(key) {
-        return new Promise(resolve => {
+    async removeItem(key: string): Promise<void> {
+        return new Promise<void>(resolve => {
             chrome.storage.local.remove(key, resolve);
         });
     }
