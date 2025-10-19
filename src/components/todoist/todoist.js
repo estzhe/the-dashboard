@@ -77,7 +77,9 @@ export default class TodoistComponent extends BaseComponent
 
         const data = {
             title: this.#title,
-            filter: this.#filter,
+            titleUri: this.#filter.includes("today")
+                ? "https://app.todoist.com/app/today"
+                : `https://app.todoist.com/app/search/${encodeURIComponent(this.#filter)}`,
             tasks,
         };
 
