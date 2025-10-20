@@ -5,7 +5,8 @@ export default class ReadCache
 {
     private readonly namespace: string;
     private readonly storage: ChromeLocalStorage;
-    private readonly pendingRequests: { [key: string]: Promise<any> };
+    
+    private static readonly pendingRequests: { [key: string]: Promise<any> } = {};
 
     constructor(namespace: string, storage: ChromeLocalStorage)
     {
@@ -13,7 +14,6 @@ export default class ReadCache
         
         this.namespace = namespace ?? "default";
         this.storage = storage;
-        this.pendingRequests = {};
     }
 
     /**
@@ -36,12 +36,12 @@ export default class ReadCache
             return value;
         }
         
-        if (this.pendingRequests[key])
+        if (ReadCache.pendingRequests[key])
         {
-            return this.pendingRequests[key];
+            return ReadCache.pendingRequests[key];
         }
-        
-        this.pendingRequests[key] = (async () =>
+
+        ReadCache.pendingRequests[key] = (async () =>
         {    
             try
             {
@@ -51,11 +51,11 @@ export default class ReadCache
             }
             finally
             {
-                delete this.pendingRequests[key];
+                delete ReadCache.pendingRequests[key];
             }
         })();
         
-        return this.pendingRequests[key];
+        return ReadCache.pendingRequests[key];
     }
     
     private async readEntry<T>(key: string): Promise<T | undefined>
@@ -82,16 +82,4 @@ export default class ReadCache
     {
         return `read-cache.${this.namespace}.${entryKey}`;
     }
-}
-
-interface CacheEntry<T>
-{
-    generation: number;
-    value: T | undefined | null;
-}
-
-interface CollectionEntry<TItem>
-{
-    keys: string[];
-    items: TItem[];
 }
