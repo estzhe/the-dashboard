@@ -70,7 +70,6 @@ export default class Renderer extends BaseComponentRenderer<Engine>
             e.preventDefault();
             e.stopPropagation();
 
-            console.log(this);
             let newIssueUri = `https://github.com/${this.engine.repository.owner}/${this.engine.repository.name}/issues/new`;
             if (this.engine.filter.include.length !== 0)
             {
@@ -151,7 +150,6 @@ export default class Renderer extends BaseComponentRenderer<Engine>
         selectDateButtons.forEach(button => button.addEventListener("click", e => this.onScheduleSelectorDateClick(e)));
         
         const dateSelector = popoverElement.querySelector<HTMLInputElement>(".choose-date-button input[type=date]")!;
-        dateSelector.addEventListener("change", e => console.log("onchange", e));
         dateSelector.addEventListener("change", e => this.onScheduleSelectorDatePickerChange(e));
 
         // @ts-ignore - unignore once TypeScript updates its definitions
