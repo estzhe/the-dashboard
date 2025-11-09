@@ -12,7 +12,6 @@ export default class Renderer extends BaseComponentRenderer<Engine>
         await super.render(refreshData);
 
         const tasks: Task[] = await this.engine.getTasks(refreshData);
-        console.log(tasks);
         const taskViews: TaskView[] = tasks
             .map(t => this.toTaskView(t))
             .sort((t1, t2) =>
@@ -31,7 +30,6 @@ export default class Renderer extends BaseComponentRenderer<Engine>
 
                 return t1.child_order - t2.child_order;
             });
-        console.log(taskViews);
 
         const data = {
             title: this.engine.title,

@@ -21,20 +21,21 @@ export default class LightClient
         // LightPhone stores note files in DigitalOcean with CORS policy set to only
         // allow requests from LightPhone dashboard. Thus we can't make these requests
         // directly from the extension new tab page. But we can make them from extension's
-        // background scripts, as Chrome does not enforce CORS policy in them.
+        // service worker, as Chrome does not enforce CORS policy in them.
         //
-        // This method could be called from both background script during periodic data
+        // This method could be called from both service worker during periodic data
         // refresh, as well as from new tab page when user requests a refresh.
         //
-        // When this method is called from new tab page, we need to ask background script
-        // to fetch the file contents. We do that through sending a message to the background
-        // script.
+        // When this method is called from new tab page, we need to ask service worker to fetch
+        // the file contents. We do that through sending a message to the service worker.
         //
-        // When this method is called from background script, we can't send a message, because
-        // Chrome does not allow a script to send messages to itself. In this case we need to
-        // directly fetch the file contents.
-        const isBackgroundScript = chrome.extension.getBackgroundPage() === window;
-        if (isBackgroundScript)
+        // When this method is called from service worker, we can't send a message, because
+        // Chrome does not allow a service worker to send messages to itself. In this case we
+        // need to directly fetch the file contents.
+        const isServiceWorker =
+            typeof ServiceWorkerGlobalScope !== "undefined" &&
+            self instanceof ServiceWorkerGlobalScope;
+        if (isServiceWorker)
         {
             const response = await fetch(fileUri);
             return response.text();
