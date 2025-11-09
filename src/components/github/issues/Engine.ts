@@ -60,14 +60,17 @@ export default class Engine extends BaseComponentEngine
         return await this.useClient(c => c.fetchIssueComments(this.repository, issueNumber));
     }
     
-    public async setIssueDueDate(date: Temporal.PlainDate, issueNumber: number): Promise<void>
+    public async setIssueDueDate(date: Temporal.PlainDate | undefined, issueNumber: number): Promise<void>
     {
         const issue = await this.useClient(c => c.fetchIssue(this.repository, issueNumber));
 
-        const newLabels = issue.labels
+        let newLabels = issue.labels
             .map(l => l.name)
-            .filter(l => !l.startsWith("due:"))
-            .concat([`due: ${date.toString()}`]);
+            .filter(l => !l.startsWith("due:"));
+        if (date !== undefined)
+        {
+            newLabels = newLabels.concat([`due: ${date.toString()}`]);
+        }
         issue.labels = await this.useClient(c => c.setIssueLabels(this.repository, issueNumber, newLabels));
 
         await this.updateIssueInCache(issue);

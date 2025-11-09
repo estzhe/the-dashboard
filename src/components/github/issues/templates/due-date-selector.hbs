@@ -1,15 +1,20 @@
 <div style="display: flex; width: 15em; flex-wrap: wrap;">
-    <div class="item today-button {{#if isTodaySelected}}selected{{/if}}" style="flex: 0 0 100%; cursor: pointer; {{#if isTodaySelected}}border: 2px dotted #737373;{{/if}}">
+    <div class="item today-button {{#if isTodaySelected}}selected{{/if}}"
+         style="flex: 0 0 100%; cursor: pointer; {{#if isTodaySelected}}border: 2px dotted #737373;{{/if}}"
+         data-date="{{dateToday}}">
         today
     </div>
     
-    <div class="item tomorrow-button {{#if isTomorrowSelected}}selected{{/if}}" style="flex: 0 0 100%; cursor: pointer;">
+    <div class="item tomorrow-button {{#if isTomorrowSelected}}selected{{/if}}"
+         style="flex: 0 0 100%; cursor: pointer;"
+         data-date="{{dateTomorrow}}">
         tomorrow
     </div>
 
     {{#each weekdays}}
         <div class="item {{#if isSelected}}selected{{/if}}"
-             style="flex: 0 0 calc(100%/7); justify-content: center; cursor: pointer; {{#if isToday}}border: 2px dotted #737373; line-height: calc(1.5em - 3px);{{/if}}">
+             style="flex: 0 0 calc(100%/7); justify-content: center; cursor: pointer; {{#if isToday}}border: 2px dotted #737373; line-height: calc(1.5em - 3px);{{/if}}"
+             data-date="{{date}}">
             {{title}}
         </div>
     {{/each}}
@@ -19,7 +24,9 @@
         <input type="date" value="{{selectedDateIso8601}}" />
     </div>
 
-    <div class="item no-date-button" style="flex: 0 0 100%; cursor: pointer;">
+    <div class="item no-date-button"
+         style="flex: 0 0 100%; cursor: pointer;"
+         data-date="">
         clear
     </div>
 </div>

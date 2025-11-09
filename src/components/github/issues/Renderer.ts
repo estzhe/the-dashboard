@@ -60,7 +60,7 @@ export default class Renderer extends BaseComponentRenderer<Engine>
                 button.addEventListener("click", e => this.onScheduleButtonClick(e, issues)));
         
         const popoverElement = this.container.querySelector<HTMLElement>(".schedule-popover")!;
-        popoverElement.addEventListener("toggle", e=> this.onSchedulePopoverToggle(e, this.container));
+        popoverElement.addEventListener("toggle", e => this.onSchedulePopoverToggle(e, this.container));
     }
 
     private onTitleClick(e: MouseEvent): void
@@ -131,28 +131,61 @@ export default class Renderer extends BaseComponentRenderer<Engine>
                 title: format.format(date),
                 isToday: date.equals(today),
                 isSelected: issue.due && date.equals(issue.due.date),
+                date: date.toString(),
             });
         }
 
         const popoverElement = this.container.querySelector<HTMLElement>(".schedule-popover")!;
         popoverElement.dataset.issueId = String(issueId);
+        popoverElement.dataset.issueNumber = String(issue.number);
         popoverElement.innerHTML = dueDateSelectorTemplate({
             weekdays,
             isTodaySelected: issue.due?.date.equals(today) === true,
             isTomorrowSelected: issue.due?.date.equals(tomorrow) === true,
             selectedDateIso8601: issue.due?.date.toString() ?? "",
+            dateToday: today.toString(),
+            dateTomorrow: tomorrow.toString(),
         });
 
-        popoverElement.querySelector(".today-button")!.addEventListener("click", async e =>
-        {
-            await this.engine.setIssueDueDate(Temporal.Now.plainDateISO(), issue.number);
-            await this.render(/*refreshData*/ false);
-        });
+        const selectDateButtons = popoverElement.querySelectorAll<HTMLElement>("[data-date]");
+        selectDateButtons.forEach(button => button.addEventListener("click", e => this.onScheduleSelectorDateClick(e)));
+        
+        const dateSelector = popoverElement.querySelector<HTMLInputElement>(".choose-date-button input[type=date]")!;
+        dateSelector.addEventListener("change", e => console.log("onchange", e));
+        dateSelector.addEventListener("change", e => this.onScheduleSelectorDatePickerChange(e));
 
         // @ts-ignore - unignore once TypeScript updates its definitions
         popoverElement.showPopover({
             source: e.target,
         });
+    }
+    
+    private async onScheduleSelectorDateClick(e: MouseEvent)
+    {
+        const targetElement = e.target as HTMLElement;
+        const popoverElement = targetElement.closest<HTMLElement>(".schedule-popover")!;
+        
+        const selectedDate = targetElement.dataset.date
+            ? Temporal.PlainDate.from(targetElement.dataset.date)
+            : undefined;
+        const issueNumber = Number(popoverElement.dataset.issueNumber!);
+    
+        await this.engine.setIssueDueDate(selectedDate, issueNumber);
+        await this.render(/*refreshData*/ false);
+    }
+    
+    private async onScheduleSelectorDatePickerChange(e: Event)
+    {
+        const targetElement = e.target as HTMLInputElement;
+        const popoverElement = targetElement.closest<HTMLElement>(".schedule-popover")!;
+
+        const selectedDate = targetElement.value
+            ? Temporal.PlainDate.from(targetElement.value)
+            : undefined;
+        const issueNumber = Number(popoverElement.dataset.issueNumber!);
+        
+        await this.engine.setIssueDueDate(selectedDate, issueNumber);
+        await this.render(/*refreshData*/ false);
     }
 
     private onSchedulePopoverToggle(e: ToggleEvent, container: HTMLElement)
