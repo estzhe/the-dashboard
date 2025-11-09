@@ -1,0 +1,32 @@
+{{#if title}}
+    <a href="{{url}}" class="anchor-header issues-title">
+        <h1>{{title}}</h1>
+    </a>
+{{/if}}
+
+{{#each issues}}
+    <a class="item" href="{{{html_url}}}" data-issue-id="{{id}}">
+        <span class="column">
+            {{title}}
+        </span>
+
+        {{#if due}}
+            <div class="column {{#if due.is_past_due}}negative-attention{{/if}} {{#if due.is_due_today}}positive-attention{{/if}}"
+               style="flex: 0 0 5rem;">
+                {{readable-date due.date}}
+            </div>
+        {{/if}}
+        
+        <div class="column item-action material-icons">
+            <span class="schedule-button">schedule</span>
+        </div>
+    </a>
+{{else}}
+    No issues.
+{{/each}}
+
+<dialog class="issue-viewer" style="width: 70%; height: 75%; overflow: auto;">
+</dialog>
+
+<div popover class="schedule-popover" style="position-area: bottom center; inset: auto; margin: 0; border: 1px solid black;">
+</div>

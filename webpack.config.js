@@ -11,7 +11,7 @@ export default {
     context: path.resolve(currentDirectoryPath, "src"),
 
     entry: {
-        "service-worker": path.resolve(currentDirectoryPath, "src/service-worker.js"),
+        "service-worker": path.resolve(currentDirectoryPath, "src/service-worker.ts"),
         newtab: path.resolve(currentDirectoryPath, "src/pages/newtab.js"),
         options: path.resolve(currentDirectoryPath, "src/pages/options.js"),
     },

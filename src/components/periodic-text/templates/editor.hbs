@@ -1,0 +1,29 @@
+<div style="width: 100%; height: 100%; display: flex;">
+    
+    <textarea style="flex: 1 0; margin: 0.5rem;">{{today.markdown}}</textarea>
+    
+    <div class="preview" style="flex: 1 0; margin: 0.5rem; overflow: auto;">{{{today.html}}}</div>
+
+    {{#if recentItemsToShowInHistory}}
+        <div class="history" style="flex: 1 0; margin: 0.5rem; overflow: auto;">
+            {{#each pastItems}}
+                <div style="margin-top: 1rem; margin-bottom: 2rem;" data-markdown="{{markdown}}">
+                    <h1 class="copy" style="cursor: pointer" title="Click to copy this value into the editor.">
+                        {{readable-date date}}
+                    </h1>
+                    <div style="padding-left: 2rem;">
+                        {{{html}}}
+                    </div>
+                </div>
+            {{else}}
+                Recent history will be shown here. Nothing in recent history so far.
+            {{/each}}
+        </div>
+    {{/if}}
+
+    <div style="flex: 0 0 4rem; text-align: center; display: flex; flex-flow: column; color: lightgray;">
+        <i class="material-icons save" style="cursor: pointer; font-size: 36px; margin-top: 0.5rem;">save</i>
+        <i class="material-icons cancel" style="cursor: pointer; font-size: 36px; margin-top: 0.5rem;">cancel</i>
+    </div>
+
+</div>

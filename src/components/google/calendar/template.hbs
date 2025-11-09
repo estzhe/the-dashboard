@@ -8,40 +8,40 @@
     <h2>{{readable-date date}}</h2>
 
     {{#each events}}
-        <div class="item" title="{{notes}}">
+        <div class="item" title="{{event.description}}">
 
-            <a class="column right" style="flex: 0 0 2rem" href="{{{uri}}}">
-                {{#if showStartTime}}
-                    {{time startDateTime}}
+            <a class="column right" style="flex: 0 0 2rem" href="{{{event.htmlLink}}}">
+                {{#if displayOptions.showStartTime}}
+                    {{time event.start}}
                 {{/if}}
             </a>
 
-            <a class="column center" style="flex: 0 0 1rem" href="{{{uri}}}">
-                {{#unless isFullDay}}
+            <a class="column center" style="flex: 0 0 1rem" href="{{{event.htmlLink}}}">
+                {{#unless displayOptions.showAsFullDay}}
                     —
                 {{/unless}}
             </a>
 
-            <a class="column right" style="flex: 0 0 2rem;" href="{{{uri}}}">
-                {{#if showEndTime}}
-                    {{time endDateTime}}
+            <a class="column right" style="flex: 0 0 2rem;" href="{{{event.htmlLink}}}">
+                {{#if displayOptions.showEndTime}}
+                    {{time event.end}}
                 {{/if}}
             </a>
 
             <a class="column"
-               style="color: {{{calendar.color}}}; flex: 0 0 0.1rem; margin-left: 0.5rem;"
-               title="{{calendar.name}}"
-               href="{{{uri}}}">
+               style="color: {{{event.color.background}}}; flex: 0 0 0.1rem; margin-left: 0.5rem;"
+               title="{{event.calendar.summary}}"
+               href="{{{event.htmlLink}}}">
                   〣
             </a>
 
-            <a class="column" style="margin-left: 0.5rem;" href="{{{uri}}}">
-                {{title}}
+            <a class="column" style="margin-left: 0.5rem;" href="{{{event.htmlLink}}}">
+                {{event.summary}}
             </a>
 
-            {{#if videoConferenceUri}}
+            {{#if event.videoConferenceUri}}
                 <span class="column right" style="flex: 0 0 5rem;">
-                    <a href="{{{videoConferenceUri}}}">video</a>
+                    <a href="{{{event.videoConferenceUri}}}">video</a>
                 </span>
             {{/if}}
         </div>

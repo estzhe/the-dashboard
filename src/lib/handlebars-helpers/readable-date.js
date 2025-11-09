@@ -1,4 +1,4 @@
-import ReadableTemporalFormat from 'app/lib/readable-temporal-format.js';
+import ReadableTemporalFormat from 'app/lib/ReadableTemporalFormat.js';
 
 export default function (value)
 {
