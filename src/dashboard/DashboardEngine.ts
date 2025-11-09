@@ -16,15 +16,22 @@ export default class DashboardEngine implements IComponentCollection
     public readonly componentResolver: ComponentResolver;
     
     private readonly storage: IStorage;
+    private readonly messagingComponentCollection: IComponentCollection;
     
     private componentsLazy: AsyncLazy<IComponentEngine[]>;
 
     public constructor(
         storage: IStorage = new ChromeLocalStorage(),
-        componentResolver = new ComponentResolver("/components"))
+        componentResolver = new ComponentResolver("/components"),
+        messagingComponentCollection: IComponentCollection = this)
     {
+        Argument.notNullOrUndefined(storage, "storage");
+        Argument.notNullOrUndefined(componentResolver, "componentResolver");
+        Argument.notNullOrUndefined(messagingComponentCollection, "messagingComponentCollection");
+        
         this.storage = storage;
         this.componentResolver = componentResolver;
+        this.messagingComponentCollection = messagingComponentCollection;
         
         this.componentsLazy = new AsyncLazy(async () => await this.createComponentInstances());
     }
@@ -76,7 +83,7 @@ export default class DashboardEngine implements IComponentCollection
         for (const options of layout.componentOptions)
         {
             const sender = { id: options.id, kind: options.kind };
-            const messaging = new ComponentMessagingService(sender, this);
+            const messaging = new ComponentMessagingService(sender, this.messagingComponentCollection);
             
             const services: DashboardServices = Object.freeze({
                 storage,

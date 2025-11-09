@@ -21,9 +21,7 @@ async function onDomContentLoaded(): Promise<void>
         lastDataRefreshDateSpan: document.querySelector<HTMLElement>("span.last-data-refresh-date")!,
     };
 
-    dashboardRenderer = new DashboardRenderer(
-        new DashboardEngine(),
-        elements.dashboardContainer);
+    dashboardRenderer = new DashboardRenderer(elements.dashboardContainer);
 
     elements.refreshButton.addEventListener("click", onRefreshButtonClick);
     document.addEventListener("keydown", onDocumentKeyDown);

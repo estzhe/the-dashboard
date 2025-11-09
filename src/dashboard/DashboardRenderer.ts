@@ -5,6 +5,9 @@ import IComponentCollection from "app/dashboard/IComponentCollection.js";
 import IComponentRenderer from "app/components/IComponentRenderer.js";
 import DashboardEngine from "app/dashboard/DashboardEngine.js";
 import IComponentEngine from "app/components/IComponentEngine.js";
+import IStorage from "app/lib/IStorage.js";
+import ChromeLocalStorage from "app/lib/ChromeLocalStorage.js";
+import ComponentResolver from "app/dashboard/ComponentResolver.js";
 
 export default class DashboardRenderer implements IComponentCollection
 {
@@ -15,14 +18,16 @@ export default class DashboardRenderer implements IComponentCollection
     private componentsLazy: AsyncLazy<IComponentRenderer[]>;
 
     public constructor(
-        engine: DashboardEngine,
-        container: HTMLElement)
+        container: HTMLElement,
+        storage: IStorage = new ChromeLocalStorage(),
+        componentResolver = new ComponentResolver("/components"))
     {
-        Argument.notNullOrUndefined(engine, "engine");
         Argument.notNullOrUndefined(container, "container");
+        Argument.notNullOrUndefined(storage, "storage");
+        Argument.notNullOrUndefined(componentResolver, "componentResolver");
         
-        this.engine = engine;
         this.container = container;
+        this.engine = new DashboardEngine(storage, componentResolver, /*messagingComponentCollection*/ this);
 
         this.componentsLazy = new AsyncLazy(async () => await this.createComponentInstances());
     }
