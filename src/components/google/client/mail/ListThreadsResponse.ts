@@ -5,7 +5,7 @@ import Thread from "app/components/google/client/mail/Thread.js";
  */
 export default interface ListThreadsResponse
 {
-    threads: Thread[],
+    threads?: Thread[],
     nextPageToken?: string,
     resultSizeEstimate: number,
 }

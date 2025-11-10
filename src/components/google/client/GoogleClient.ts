@@ -109,7 +109,7 @@ export default class GoogleClient
             ["https://www.googleapis.com/auth/gmail.modify"]);
         
         const response = await fetch(
-            `https://gmail.googleapis.com/gmail/v1/users/me/threads/${threadId}/ `,
+            `https://gmail.googleapis.com/gmail/v1/users/me/threads/${threadId}/modify`,
             {
                 method: "POST",
                 headers: {
@@ -138,7 +138,7 @@ export default class GoogleClient
                 }
             });
         const data = await response.json() as MailListThreadsResponse;
-        return data.threads;
+        return data.threads ?? [];
     }
     
     public async fetchMailThread(threadId: string): Promise<MailThread>
