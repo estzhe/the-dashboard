@@ -7,6 +7,7 @@ import DashboardServices from "app/dashboard/DashboardServices.js";
 import BaseComponentEngine from "app/components/BaseComponentEngine.js";
 import IssueFilter from "app/components/github/issues/IssueFilter.js";
 import IssueCommment from "app/components/github/client/IssueComment.js";
+import LabelList from "app/components/github/issues/label-list";
 import {Temporal} from "@js-temporal/polyfill";
 
 export default class Engine extends BaseComponentEngine
@@ -15,6 +16,7 @@ export default class Engine extends BaseComponentEngine
     public readonly repository: Repository;
     public readonly title: string | undefined;
     public readonly filter: IssueFilter;
+    public readonly newIssueLabels: string[];
 
     public constructor(pathToComponent: string, options: Options, services: DashboardServices)
     {
@@ -32,7 +34,8 @@ export default class Engine extends BaseComponentEngine
         this.accountName = options.account;
         this.repository = Repository.fromUri(options.repo);
         this.title = options.title;
-        this.filter = options.filter ? IssueFilter.fromExpression(options.filter) : IssueFilter.empty;
+        this.filter = options.filter ? new IssueFilter(options.filter) : IssueFilter.any;
+        this.newIssueLabels = options.newIssueLabels ? LabelList.parse(options.newIssueLabels) : [];
     }
 
     public override async refreshData(): Promise<void>

@@ -5,10 +5,11 @@
     "strictNullChecks": true,
     "strictPropertyInitialization": true,
     "strictFunctionTypes": true,
-    "moduleResolution": "nodenext",
-    "module": "nodenext",
+    "moduleResolution": "bundler",
+    "module": "esnext",
     "target": "esnext",
     "jsx": "react-jsxdev",
+    "isolatedModules": true,
     "allowJs": true,
     "resolveJsonModule": true,
     "moduleDetection": "force",
@@ -22,7 +23,7 @@
     ],
     "typeRoots": [
       "./src/types",
-      "./node_modules/@types"
+      "./node_modules/@types",
     ],
     "paths": {
       "app/*": ["./src/*"],
@@ -30,5 +31,8 @@
   },
   "include": [
     "./src"
+  ],
+  "files": [
+    "./node_modules/jest-expect-message/types/index.d.ts",
   ]
 }

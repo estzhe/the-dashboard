@@ -24,7 +24,7 @@ export default class Renderer extends BaseComponentRenderer<Engine>
         const data = {
             title: this.engine.title,
             url: `https://github.com/${this.engine.repository.owner}/${this.engine.repository.name}` +
-                    `/issues?q=${encodeURIComponent(this.engine.filter.toQuery())}`,
+                    `/issues?q=${encodeURIComponent(this.engine.filter.toFilterQuery())}`,
             issues: issueViews,
         };
         this.container.innerHTML = template(data);
@@ -71,9 +71,9 @@ export default class Renderer extends BaseComponentRenderer<Engine>
             e.stopPropagation();
 
             let newIssueUri = `https://github.com/${this.engine.repository.owner}/${this.engine.repository.name}/issues/new`;
-            if (this.engine.filter.include.length !== 0)
+            if (this.engine.newIssueLabels.length > 0)
             {
-                newIssueUri += "?labels=" + encodeURIComponent(this.engine.filter.include.join(","));
+                newIssueUri += "?labels=" + encodeURIComponent(this.engine.newIssueLabels.map(l => `"${l}"`).join(","));
             }
 
             window.open(newIssueUri, "_blank")!.focus();

@@ -1,0 +1,1 @@
+export { default } from "app/components/github/issues/label-list/LabelList.js";

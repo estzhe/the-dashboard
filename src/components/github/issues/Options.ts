@@ -6,4 +6,5 @@ export default interface Options extends BaseComponentOptions
     repo: string | undefined;
     title: string | undefined;
     filter: string | undefined;
+    newIssueLabels: string | undefined;
 }

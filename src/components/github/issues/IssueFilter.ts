@@ -1,86 +1,82 @@
 import Argument from "app/lib/Argument.js";
 import Issue from "app/components/github/client/Issue.js";
+import { default as LabelPredicate, PredicateAst, PredicateAstNodeType }
+    from "app/components/github/issues/label-predicate";
 
 export default class IssueFilter
 {
-    include: string[];
-    exclude: string[];
-    
-    constructor(options?: { include?: string[], exclude?: string[] })
+    private readonly predicate?: LabelPredicate;
+
+    public static readonly any: Readonly<IssueFilter> = new IssueFilter();
+
+    public constructor(predicate?: string)
     {
-        this.include = options?.include ?? [];
-        this.exclude = options?.exclude ?? [];
-    }
-
-    static readonly empty: Readonly<IssueFilter> = new IssueFilter();
-    
-    static fromExpression(filterExpression: string) : IssueFilter
-    {
-        Argument.notNullOrUndefined(filterExpression, "filterExpression");
-
-        const expressions = filterExpression.split(/\s+/);
-
-        const include: string[] = [];
-        const exclude: string[] = [];
-        for (const expression of expressions)
+        if (predicate)
         {
-            if (expression.startsWith("-"))
-            {
-                if (expression.length === 1)
-                {
-                    throw new Error(
-                        `An exclusion filtering expression must include a label to exclude after '-' character. ` +
-                        `Filter expression: '${expression}'.`);
-                }
-
-                const label = expression.substring(1);
-                exclude.push(label);
-            }
-            else
-            {
-                include.push(expression);
-            }
+            this.predicate = new LabelPredicate(predicate);
         }
-
-        return new IssueFilter({ include, exclude });
     }
     
-    toQuery(): string
+    public toFilterQuery(): string
     {
-        let query = "is:open is:issue";
+        let query = "is:open is:issue sort:updated-desc";
         
-        if (this.include.length !== 0)
+        if (this.predicate)
         {
-            query += " label:" + this.include.join(",");
+            query += " " + toFilterQuery(this.predicate.ast);
         }
-        
-        if (this.exclude.length !== 0)
-        {
-            query += " " + this.exclude.map(label => `-label:${label}`).join(" ");
-        }
-        
+
         return query;
     }
-    
-    apply(issues: Issue[]): Issue[]
+
+    public apply(issues: Issue[]): Issue[]
     {
         Argument.notNullOrUndefined(issues, "issues");
 
-        if (this.include.length !== 0)
+        return this.predicate
+            ? issues.filter(issue => this.predicate!.matches(issue.labels.map(label => label.name)))
+            : issues;
+    }
+}
+
+function toFilterQuery(predicateAst: PredicateAst): string
+{
+    switch (predicateAst.type)
+    {
+        case PredicateAstNodeType.Label:
+            const escapedLabel = predicateAst.name
+                .replace(`\\`, `\\\\`)
+                .replace(`"`, `\\"`);
+            return `label:"${escapedLabel}"`;
+
+        case PredicateAstNodeType.Not:
+            return "-" + toFilterQuery(predicateAst.operand);
+
+        case PredicateAstNodeType.And:
         {
-            // include if contains any of includes
-            issues = issues.filter(
-                issue => this.include.some(
-                    targetLabel => issue.labels.some(label => label.name === targetLabel)));
-        }
-        if (this.exclude.length !== 0)
-        {
-            // exclude if contains any of excludes
-            issues = issues.filter(
-                issue => this.exclude.every(
-                    targetLabel => issue.labels.every(label => label.name !== targetLabel)));
+            const left =
+                predicateAst.left.type === PredicateAstNodeType.Label ||
+                predicateAst.left.type === PredicateAstNodeType.And ||
+                predicateAst.left.type === PredicateAstNodeType.Not
+                    ? toFilterQuery(predicateAst.left)
+                    : `(${toFilterQuery(predicateAst.left)})`;
+            const right =
+                predicateAst.right.type === PredicateAstNodeType.Label ||
+                predicateAst.right.type === PredicateAstNodeType.And ||
+                predicateAst.right.type === PredicateAstNodeType.Not
+                    ? toFilterQuery(predicateAst.right)
+                    : `(${toFilterQuery(predicateAst.right)})`;
+            return `${left} AND ${right}`;
         }
 
-        return issues;
+        case PredicateAstNodeType.Or:
+        {
+            const left = toFilterQuery(predicateAst.left);
+            const right = toFilterQuery(predicateAst.right);
+            return `${left} OR ${right}`;
+        }
+
+        default:
+            throw new Error(`Unknown AST node type: ${(predicateAst as any).type}`);
     }
 }
