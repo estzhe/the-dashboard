@@ -19,15 +19,9 @@ export default class LabelPredicate
         return this.predicateAst;
     }
     
-    public matches(labels: string[]): boolean
+    public matches(isMatch: (predicateLabel: string) => boolean): boolean
     {
-        const labelSet = new Set<string>();
-        for (const label of labels)
-        {
-            labelSet.add(label.toLowerCase());
-        }
-        
-        return this.matchesCore(this.predicateAst, labelSet);
+        return this.matchesCore(this.predicateAst, isMatch);
     }
     
     public toString(indent: number = 0): string
@@ -37,21 +31,21 @@ export default class LabelPredicate
             .replace(/^/mg, " ".repeat(indent));
     }
     
-    private matchesCore(predicateAst: PredicateAst, labels: Set<string>): boolean
+    private matchesCore(predicateAst: PredicateAst, isMatch: (predicateLabel: string) => boolean): boolean
     {
         switch (predicateAst.type)
         {
             case PredicateAstNodeType.Label:
-                return labels.has(predicateAst.name.toLowerCase());
+                return isMatch(predicateAst.name);
 
             case PredicateAstNodeType.Not:
-                return !this.matchesCore(predicateAst.operand, labels);
+                return !this.matchesCore(predicateAst.operand, isMatch);
 
             case PredicateAstNodeType.And:
-                return this.matchesCore(predicateAst.left, labels) && this.matchesCore(predicateAst.right, labels);
+                return this.matchesCore(predicateAst.left, isMatch) && this.matchesCore(predicateAst.right, isMatch);
 
             case PredicateAstNodeType.Or:
-                return this.matchesCore(predicateAst.left, labels) || this.matchesCore(predicateAst.right, labels);
+                return this.matchesCore(predicateAst.left, isMatch) || this.matchesCore(predicateAst.right, isMatch);
 
             default:
                 throw new Error(`Unknown AST node type: ${(predicateAst as any).type}`);

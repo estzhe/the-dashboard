@@ -16,15 +16,16 @@ export default class Renderer extends BaseComponentRenderer<Engine>
     {
         await super.render(refreshData);
 
-        let issues = await this.engine.getIssues(refreshData);
-        issues = this.engine.filter.apply(issues)
+        const issues: Issue[] = await this.engine.getIssues(refreshData);
+        const issueViews: IssueView[] =
+            this.engine.filter.apply(this.toIssueViews(issues))
             .sort((i1, i2) => i2.updated_at.localeCompare(i1.updated_at));  // recent first
-
-        const issueViews = this.toIssueViews(issues);
+        
+        const filterQuery = "is:open is:issue sort:updated-desc " + this.engine.filter.toFilterQuery();
         const data = {
             title: this.engine.title,
             url: `https://github.com/${this.engine.repository.owner}/${this.engine.repository.name}` +
-                    `/issues?q=${encodeURIComponent(this.engine.filter.toFilterQuery())}`,
+                    `/issues?q=${encodeURIComponent(filterQuery)}`,
             issues: issueViews,
         };
         this.container.innerHTML = template(data);

@@ -128,11 +128,11 @@ export default class Tokenizer
         }
 
         const word= this.input.slice(start, this.position);
-        switch (word.toUpperCase())
+        switch (word.toLowerCase())
         {
-            case "AND": return { type: TokenType.And };
-            case "OR": return { type: TokenType.Or };
-            case "NOT": return { type: TokenType.Not };
+            case "and": return { type: TokenType.And };
+            case "or": return { type: TokenType.Or };
+            case "not": return { type: TokenType.Not };
             default: return { type: TokenType.Label, value: word };
         }
     }

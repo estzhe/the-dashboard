@@ -5,11 +5,11 @@ const cases = [
         predicate: "a1",
         matches: [
             ["a1"],
-            ["A1", "A2"],
             ["a1", "a2", "a3"],
         ],
         doesNotMatch: [
             [],
+            ["A1", "A2"],
             ["a3"],
         ],
     },
@@ -17,11 +17,11 @@ const cases = [
         predicate: `"a1"`,
         matches: [
             ["a1"],
-            ["A1", "A2"],
             ["a1", "a2", "a3"],
         ],
         doesNotMatch: [
             [],
+            ["A1", "A2"],
             ["a3"],
         ],
     },
@@ -29,12 +29,12 @@ const cases = [
         predicate: "a1 AND a2",
         matches: [
             ["a1", "a2"],
-            ["A1", "A2"],
             ["a1", "a2", "a3"],
         ],
         doesNotMatch: [
             [],
             ["a1"],
+            ["A1", "A2"],
             ["a1", "a3"],
         ],
     },
@@ -163,24 +163,26 @@ test("predicate gets evaluated correctly", () =>
             
             for (const labels of c.matches ?? [])
             {
+                const labelSet = new Set(labels);
                 const contextMessage = [
                     `Predicate: '${c.predicate}'`,
                     `Labels: [${labels.map(l => `'${l}'`).join(", ")}]`,
                     `AST:\n${labelPredicate.toString(2)}`,
                 ].join("\n  ");
                 
-                expect(labelPredicate.matches(labels), contextMessage).toBe(true);
+                expect(labelPredicate.matches(label => labelSet.has(label)), contextMessage).toBe(true);
             }
             
             for (const labels of c.doesNotMatch ?? [])
             {
+                const labelSet = new Set(labels);
                 const contextMessage = [
                     `Predicate: '${c.predicate}'`,
                     `Labels: [${labels.map(l => `'${l}'`).join(", ")}]`,
                     `AST:\n${labelPredicate.toString(2)}`,
                 ].join("\n  ");
                 
-                expect(labelPredicate.matches(labels), contextMessage).toBe(false);
+                expect(labelPredicate.matches(label => labelSet.has(label)), contextMessage).toBe(false);
             }
         }
     }
