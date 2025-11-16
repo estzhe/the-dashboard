@@ -10,7 +10,8 @@ export default class ChromeLocalStorage implements IStorage
                 key,
                 result =>
                 {
-                    resolve(result[key] ?? null);
+                    const value = result[key] as string|undefined;
+                    resolve(value ?? null);
                 });
         });
     }
