@@ -66,19 +66,21 @@ export default class Renderer extends BaseComponentRenderer<Engine>
 
     private onTitleClick(e: MouseEvent): void
     {
-        if (e.altKey)
+        if (!e.altKey) return;
+        
+        e.preventDefault();
+        e.stopPropagation();
+
+        let newIssueUri = `https://github.com/${this.engine.repository.owner}/${this.engine.repository.name}/issues/new`;
+        if (this.engine.newIssueLabels.length > 0)
         {
-            e.preventDefault();
-            e.stopPropagation();
-
-            let newIssueUri = `https://github.com/${this.engine.repository.owner}/${this.engine.repository.name}/issues/new`;
-            if (this.engine.newIssueLabels.length > 0)
-            {
-                newIssueUri += "?labels=" + encodeURIComponent(this.engine.newIssueLabels.map(l => `"${l}"`).join(","));
-            }
-
-            window.open(newIssueUri, "_blank")!.focus();
+            const queryParameter = this.engine.newIssueLabels
+                .map(label => label === "due:today" ? `"due: ${Temporal.Now.plainDateISO()}"` : `"${label}"`)
+                .join(",");
+            newIssueUri += "?labels=" + encodeURIComponent(queryParameter);
         }
+
+        window.open(newIssueUri, "_blank")!.focus();
     }
 
     private async onIssueClick(e: MouseEvent, issues: IssueView[]): Promise<void>
