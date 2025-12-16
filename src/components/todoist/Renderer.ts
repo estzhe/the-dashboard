@@ -21,8 +21,10 @@ export default class Renderer extends BaseComponentRenderer<Engine>
                 {
                     return d;
                 }
-
-                d = (t1.day_order ?? Number.MAX_SAFE_INTEGER) - (t2.day_order ?? Number.MAX_SAFE_INTEGER);
+                
+                const t1DayOrder = (t1.day_order === -1 ? null : t1.day_order) ?? Number.MAX_SAFE_INTEGER;
+                const t2DayOrder = (t2.day_order === -1 ? null : t2.day_order) ?? Number.MAX_SAFE_INTEGER;
+                d = t1DayOrder - t2DayOrder;
                 if (d !== 0)
                 {
                     return d;
