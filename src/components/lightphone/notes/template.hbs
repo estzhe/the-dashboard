@@ -1,5 +1,7 @@
 {{#if title}}
-    <a href="https://dashboard.thelightphone.com/devices/{{deviceId}}/tools/notes/view" class="anchor-header">
+    <!-- We want https://dashboard.thelightphone.com/devices/{{deviceId}}/tools/notes/view here,
+         but lightphone dashboard has a bug that fails to load the page if we navigate beyond /toos.-->
+    <a href="https://dashboard.thelightphone.com/devices/{{deviceId}}/tools" class="anchor-header">
         <h1>{{title}}</h1>
     </a>
 {{/if}}
