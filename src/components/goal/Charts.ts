@@ -58,7 +58,15 @@ export default class Charts
             data: {
                 values: data,
             },
+            resolve: {
+                axis: {
+                    // We use two layers, each with its own x-axis spec.
+                    // Vega merges x-axis specs into single by default, which we don't want.
+                    x: "independent",
+                },
+            },
             layer: [
+                // Layer 1: the line and day labels.
                 {
                     mark: {
                         type: "line",
@@ -70,7 +78,7 @@ export default class Charts
                             axis: {
                                 grid: false,
                                 title: null,
-                                labelExpr: "[timeFormat(datum.value, '%e'), timeFormat(datum.value, '%d') == '01' ? timeFormat(datum.value, '%b') : '']",
+                                labelExpr: "[timeFormat(datum.value, '%e')]",
                                 tickCount: "day",
                             },
                         },
@@ -102,6 +110,34 @@ export default class Charts
                         ],
                     },
                 },
+                // Layer 2: invisible marks + month axis that always shows month names.
+                {
+                    mark: {
+                        type: "point",
+                        opacity: 0,
+                    },
+                    encoding: {
+                        x: {
+                            field: "date",
+                            timeUnit: "yearmonthdate",
+                            axis: {
+                                orient: "bottom",
+                                grid: false,
+                                title: null,
+                                labelExpr: "timeFormat(datum.value, '%b')",
+                                tickCount: "month", // force month ticks independent of the dense day ticks
+                                offset: 18, // make it look like a second row of labels
+                                tickSize: 0,
+                                domain: false,
+                            },
+                        },
+                        // must have a y for the point mark; reuse y so scales stay compatible
+                        y: {
+                            field: "value",
+                            type: "quantitative",
+                        },
+                    }
+                }
             ],
         };
 
