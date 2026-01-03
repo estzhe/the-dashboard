@@ -66,7 +66,7 @@ export default class Charts
                     encoding: {
                         x: {
                             field: "date",
-                            timeUnit: "monthdate",
+                            timeUnit: "yearmonthdate",
                             axis: {
                                 grid: false,
                                 title: null,
