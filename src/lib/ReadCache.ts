@@ -5,7 +5,10 @@ export default class ReadCache
 {
     private readonly namespace: string;
     private readonly storage: IStorage;
-    
+
+    /**
+     * Note: can be shared across multiple cache instances.
+     */
     private pendingRequests: { [key: string]: Promise<any> } = {};
 
     public constructor(namespace: string, storage: IStorage)
@@ -40,12 +43,13 @@ export default class ReadCache
             return value;
         }
         
-        if (this.pendingRequests[key])
+        const requestsKey = this.getFullyQualifiedKey(key);
+        if (this.pendingRequests[requestsKey])
         {
-            return this.pendingRequests[key];
+            return this.pendingRequests[requestsKey];
         }
 
-        this.pendingRequests[key] = (async () =>
+        this.pendingRequests[requestsKey] = (async () =>
         {    
             try
             {
@@ -55,11 +59,11 @@ export default class ReadCache
             }
             finally
             {
-                delete this.pendingRequests[key];
+                delete this.pendingRequests[requestsKey];
             }
         })();
         
-        return this.pendingRequests[key];
+        return this.pendingRequests[requestsKey];
     }
 
     /**
@@ -83,14 +87,14 @@ export default class ReadCache
     }
 
     /**
-     * Returns a new cache instance further scoped to `key`
-     * (full namespace becomes the namespace of current cache instance + key).
+     * Returns a new cache instance further scoped to `subScope`
+     * (full namespace becomes the namespace of current cache instance + subScope).
      */
-    public scope(key: string): ReadCache
+    public scope(subScope: string): ReadCache
     {
-        Argument.notNullOrUndefinedOrEmpty(key, "key");
+        Argument.notNullOrUndefinedOrEmpty(subScope, "subScope");
         
-        const scopedNamespace = `${this.namespace}.${key}`;
+        const scopedNamespace = `${this.namespace}.${subScope}`;
         const scopedCache = new ReadCache(scopedNamespace, this.storage);
         scopedCache.pendingRequests = this.pendingRequests;
         
@@ -101,7 +105,7 @@ export default class ReadCache
     {
         Argument.notNullOrUndefinedOrEmpty(key, "key");
 
-        const storageKey = this.getFullStorageKey(key);
+        const storageKey = this.getFullyQualifiedKey(key);
 
         let json = await this.storage.getItem(storageKey);
         return json ? JSON.parse(json) : undefined;
@@ -111,13 +115,13 @@ export default class ReadCache
     {
         Argument.notNullOrUndefinedOrEmpty(key, "key");
 
-        const storageKey = this.getFullStorageKey(key);
+        const storageKey = this.getFullyQualifiedKey(key);
         const json = JSON.stringify(value);
         
         await this.storage.setItem(storageKey, json);
     }
     
-    private getFullStorageKey(entryKey: string): string
+    private getFullyQualifiedKey(entryKey: string): string
     {
         return `read-cache.${this.namespace}.${entryKey}`;
     }
